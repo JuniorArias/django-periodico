@@ -1,0 +1,22 @@
+   # Variables de entorno y claves
+   .env
+   
+   # Base de datos local (no la subimos, la crearemos en la nube)
+   db.sqlite3
+   
+   # Archivos generados por Python
+   __pycache__/
+   *.py[cod]
+   *$py.class
+   
+   # Entornos virtuales
+   venv/
+   .venv/
+   env/
+   .virtualenvs/
+   
+   # Archivos de IDE
+   .vscode/
+   .idea/
+   *.swp
+   *.swo

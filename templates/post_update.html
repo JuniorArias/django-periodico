@@ -1,0 +1,24 @@
+<!-- templates/post_update.html -->
+ {% extends 'base.html' %}
+
+ {% block content %}
+    <div class="row">
+        <div class="col-md-6 mx-auto">
+            <div class="card-shadow">
+                <div class="card-body">
+                    <h2 class="card-title mb-4">Editar Artículo</h2>
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            {{ form.as_p }}
+                        </div>
+                        <button type="submit"class="btn btn-success w-100">Guardar Cambios</button>
+                    </form>
+                </div>
+            </div>
+            <div class="text-center mt-3">
+                <a href="{% url 'home' %}" class="text-decoration-none">&larr;Cancelar y volver</a>
+            </div>
+        </div>
+    </div>
+ {% endblock content %}

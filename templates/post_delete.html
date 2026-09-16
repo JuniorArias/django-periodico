@@ -1,0 +1,14 @@
+<!-- templates/post_delete.html -->
+ {% extends 'base.html' %}
+
+ {% block content %}
+    <h1>Elimminar Artículo</h1>
+    <p>¿Estás seguro de que quieres eliminar este artículo?</p>
+    <p><strong>{{ post.text }}</strong></p>
+
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit">Confirmar Eliminación</buttin>
+        <a href="{% url 'post_detail' post.pk %}">Cancelar</a>
+    </form>
+ {% endblock content %}

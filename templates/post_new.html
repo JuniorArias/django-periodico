@@ -1,0 +1,27 @@
+<!-- templates/post_new.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+   <div class="row">
+      <div class="col-md-6 mx-auto">
+         <div class="card shadow">
+            <div class="card-body">
+               <h2 class="card-title text-center mb-4">Crear Nuevo Articulo</h2>
+               <!-- El método debe ser POST para enviar datos al servidor -->
+               <form method="post" class="text-center">
+                  <!-- OBLIGATORIO Token de seguridad de Django -->
+                  {% csrf_token %}
+                  <div class="mb-3">
+                     <!-- Django renderiza el formulario automáticamente aquí -->
+                     {{ form.as_p }}
+                  </div>
+                  <button type="submit" class="btn btn-success w-100">Publicar Artículo</button>
+               </form>
+            </div>
+         </div>
+         <div class="text-center mt-3">
+            <a href="{% url 'home' %}" class="text-decoration-none">&larr; Cancelar y volver</a>
+         </div>
+      </div>
+   </div>
+{% endblock content %}
