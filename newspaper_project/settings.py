@@ -29,13 +29,13 @@ SECRET_KEY = os.environ.get('SELECT_KEY','clave-por-defecto-solo-para-desarrollo
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = [
+ALLOWED_HOSTS = "*"#[
     #os.environ.get('DJANGO_HOSTS', '127.0.0.1,localhost').split(',')
-    'django-periodico.onrender.com',
-    '.onrender.com',
-    '127.0.0.1',
-    'localhost',
-]
+    #'django-periodico.onrender.com',
+    #'.onrender.com',
+    #'127.0.0.1',
+    #'localhost',
+#]
 
 CSRF_TRUSTED_ORIGINS = [
     'https://*.onrender.com',
