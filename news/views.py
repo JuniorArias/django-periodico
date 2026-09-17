@@ -7,6 +7,10 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from users.forms import CustomUserCreationForm
 from django.db.models import Q
 from .models import Post
+from rest_framework import generics
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from .serializers import PostSerializer
+
 
 class HomePageView(ListView): # <-- Cambiamos a Listview
     model = Post
@@ -104,3 +108,27 @@ class SignUpView(CreateView):
     form_class = CustomUserCreationForm
     success_url = reverse_lazy('login')
     template_name = 'registration/signup.html'
+
+#--- VISTAS PARA LA API ---
+
+class PostListAPIView(generics.ListCreateAPIView):
+    """
+    API endpoint que permite listar todos los posts o crear uno nuevo.
+    - GET: Cualquiera puede ver los posts.
+    - POST: Solo usuarios autenticados pueden crear posts.
+    """
+    queryset = Post.objects.all().order_by('-id')
+    serializer_class = PostSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def perform_create(self, serializer):
+        # Asignar el autor automáticamente al usuario logueado en la API
+        serializer.save(author=self.request.user)
+
+class PostDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
+    """
+    API endpoint para ver, editar o borrar un post específico.
+    """
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]

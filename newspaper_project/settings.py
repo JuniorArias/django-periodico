@@ -54,6 +54,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # 3rd party
+    'rest_framework',
+    # Local
     'news',
     'users',
 ]

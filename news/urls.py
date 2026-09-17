@@ -1,5 +1,5 @@
 # news/urls.py
-from django.urls import path
+from django.urls import path, include
 from .views import (HomePageView, AboutPageView, PostDetailView,
                     PostCreateView, PostUpdateView, PostDeleteView, SignUpView)
 
@@ -11,4 +11,5 @@ urlpatterns = [
     path('post/<int:pk>/edit/', PostUpdateView.as_view(), name='post_edit'),
     path('post/<int:pk>/delete/', PostDeleteView.as_view(), name='post_delete'),
     path('signup/', SignUpView.as_view(), name='signup'),
+    path('api/', include('news.api_urls')),
 ]
