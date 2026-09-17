@@ -1,0 +1,26 @@
+<!-- templates/404.html -->
+ {% extends 'base.html' %}
+
+ {% block content %}
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-6 text-center">
+            <div class="card shadow-lg border-0">
+                <div class="card-body p-5">
+                    <h1 class="display-1 text-muted fw-bold">404</h1>
+                    <h2 class="mb-4">¡Ups! Página no encontrada</h2>
+                    <p class="lead text-muted mb-4">
+                        La dirección que buscas no existe o ha sido movida.
+                        Si estás buscando la API, recuerda que las rutas correctas son <code>/api/posts/</code>.
+                    </p>
+                    <a href="{% url 'home' %}" class="btn btn-primary btn-lg">
+                        &larr; Volver al inicio
+                    </a>
+                    <a href="{% url 'post_list_api' %}" class="btn btn-outline-secondary btn-lg ms-2">
+                        Ir a la API &rarr;
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+ {% endblock content %}
+
