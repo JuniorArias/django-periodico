@@ -17,7 +17,7 @@ class HomePageView(ListView): # <-- Cambiamos a Listview
     model = Post
     template_name = 'index.html'
     context_object_name = 'all_posts' # <-- Nombre de la lista de datos
-    paginate_by = 5
+    paginate_by = 10
 
     # 1. Sobrescribimos get_queryset para filtrar por búsqueda
     def get_queryset(self):
