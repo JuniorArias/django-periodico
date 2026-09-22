@@ -113,15 +113,26 @@ class SignUpView(CreateView):
 #--- VISTAS PARA LA API ---
 
 class PostListAPIView(generics.ListCreateAPIView):
-    """
-    API endpoint que permite listar todos los posts o crear uno nuevo.
-    - GET: Cualquiera puede ver los posts.
-    - POST: Solo usuarios autenticados pueden crear posts.
-    """
-    queryset = Post.objects.all().order_by('-id')
     serializer_class = PostSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     authentication_classes = [TokenAuthentication]
+
+    def get_queryset(self):
+        """
+        Filtra los posts según el parámetro de búsqueda 'q'
+        """
+
+        queryset = Post.objects.all().order_by('-id')
+        search_query = self.request.query_params.get('q', None)
+
+        if search_query:
+            # Buscar en texto del post o en nombre del autor
+            queryset = queryset.filter(
+                Q(text__icontains=search_query) |
+                Q(author__username__icontains=search_query)
+            )
+
+        return queryset
 
     def perform_create(self, serializer):
         # Asignar el autor automáticamente al usuario logueado en la API
