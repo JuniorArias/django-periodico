@@ -57,6 +57,8 @@ INSTALLED_APPS = [
     # 3rd party
     'rest_framework',
     'rest_framework.authtoken',
+    'cloudinary_storage',
+    'cloudinary',
     # Local
     'news',
     'users',
@@ -163,3 +165,16 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination', 'PAGE_SIZE': 10,
 }
+
+MEDIA_URL ='/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+#--- CONFIGURACION DE CLOUDINARY ---
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': os.environ.get('vtey0sct'),
+    'API_KEY': os.environ.get('966914473537684'),
+    'API_SECRET': os.environ.get('YtLGk70j8VnBVY96ABjWE3V34qA'),
+}
+
+# Usar Cloudinary para archivos media
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'

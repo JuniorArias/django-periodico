@@ -7,11 +7,13 @@ class Post(models.Model):
     # Un campo de texto para el contenido del artículo
     text = models.TextField()
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='posts/', blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     # Este método le dice a Django cómo mostrar el objeto Admin y en la consola 
     def __str__(self):
         return self.text[:50]
 
     def get_absolute_url(self):
-        return reverse("post_detail", args=[str(self.id)])
+        return reverse("post_detail", args=[str(self.pk)])
     

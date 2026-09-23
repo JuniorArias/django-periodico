@@ -138,6 +138,10 @@ class PostListAPIView(generics.ListCreateAPIView):
         # Asignar el autor automáticamente al usuario logueado en la API
         serializer.save(author=self.request.user)
 
+    def get_parder_classes(self):
+        from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
+        return [MultiPartParser, FormParser, JSONParser]
+
 class PostDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     """
     API endpoint para ver, editar o borrar un post específico.
@@ -146,3 +150,8 @@ class PostDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = PostSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsAuthorOrEditor]
     authentication_classes = [TokenAuthentication]
+
+    # Aceptar archivos multipart en PUT/PATCH
+    def get_parser_classes(self):
+        from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
+        return [MultiPartParser, FormParser, JSONParser]
