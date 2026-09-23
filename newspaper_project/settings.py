@@ -171,9 +171,13 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 #--- CONFIGURACION DE CLOUDINARY ---
 CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': os.environ.get('vtey0sct'),
-    'API_KEY': os.environ.get('966914473537684'),
-    'API_SECRET': os.environ.get('YtLGk70j8VnBVY96ABjWE3V34qA'),
+    #'CLOUD_NAME': os.environ.get('vtey0sct'),
+    #'API_KEY': os.environ.get('966914473537684'),
+    #'API_SECRET': os.environ.get('YtLGk70j8VnBVY96ABjWE3V34qA'),
+
+    'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME'),
+    'API_KEY': os.environ.get('CLOUDINARY_API_KEY'),
+    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET'),
 }
 
 # Usar Cloudinary para archivos media
