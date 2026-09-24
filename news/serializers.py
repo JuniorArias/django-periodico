@@ -46,4 +46,9 @@ class CurrentUserSerializer(serializers.ModelSerializer):
     can_write = serializers.SerializerMethodField()
 
     class Meta:
-        model
+        model = User
+        fields = ['id', 'username', 'email', 'can_write']
+
+    def get_can_write(self, obj):
+        # Verifica si el usuario tiene permisos de esxritura
+        return obj.has_perm('news.add_post') or obj.has_perm('news.change_post')
