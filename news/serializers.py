@@ -16,7 +16,7 @@ class PostSerializer(serializers.ModelSerializer):
         fields = ['id', 'author', 'text', 'image', 'created_at'] # Campos a exponer en la API
 
 # Serializer para registro de usuarios
-class UserRegistationSerializer(serializers.ModelSerializer):
+class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, min_length=8)
     password_confirm = serializers.CharField(write_only=True)
 
