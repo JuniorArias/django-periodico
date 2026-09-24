@@ -3,6 +3,8 @@ from django.views.generic import TemplateView, ListView, DetailView, CreateView,
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db.models import Q
+from django.contrib import messages
+from django.shortcuts import redirect
 from rest_framework import generics, permissions, status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.exceptions import PermissionDenied
@@ -68,7 +70,7 @@ class PostDetailView(DetailView):
         return context
 
 
-class PostCreateView(LoginRequiredMixin, CreateView):
+class PostCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     login_url = 'login'
     model = Post
     template_name = 'post_new.html'
@@ -81,9 +83,7 @@ class PostCreateView(LoginRequiredMixin, CreateView):
 
     def hadle_no_permission(self):
         """Mesaje personalizado cuando no tiene permisos"""
-        from django.contrib import messages
         messages.error(self.request, 'No tienes permisos para crear artículos. Tu cuenta es de solo lectura.')
-        from django.shortcuts import redirect
         return redirect('home')
 
     def form_valid(self, form):
