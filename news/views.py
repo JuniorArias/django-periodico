@@ -11,8 +11,9 @@ from rest_framework import generics, permissions, status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
+from rest_framework.views import APIView
 from .permissions import IsAuthorOrEditor
-from .serializers import PostSerializer, UserRegistationSerializer
+from .serializers import PostSerializer, UserRegistationSerializer, CurrentUserSerializer
 
 
 class HomePageView(ListView): # <-- Cambiamos a Listview
@@ -194,3 +195,14 @@ class UserRegistationView(generics.CreateAPIView):
                 'email': user.email
             }
         }, status=status.HTTP_201_CREATED)
+
+# Vista para obtener información del usuario actual
+class CurrentUserView(APIView):
+    """
+    Devuelve información del usuario autenticado actual, incluyendo sus permisos.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get(self, request):
+        serializer = CurrentUserSerializer(request.user)
+        return Response(serializer.data)

@@ -41,3 +41,9 @@ class UserRegistationSerializer(serializers.ModelSerializer):
         readers_group, created = Group.objects.get_or_create(name='readers')
         user.groups.add(readers_group)
         return user
+
+class CurrentUserSerializer(serializers.ModelSerializer):
+    can_write = serializers.SerializerMethodField()
+
+    class Meta:
+        model
