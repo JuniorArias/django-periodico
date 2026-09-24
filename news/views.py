@@ -11,6 +11,7 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 
 from users.forms import CustomUserCreationForm
 from .models import Post
@@ -167,13 +168,75 @@ class PostListAPIView(generics.ListCreateAPIView):
 class PostDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
-    # IsAuthorOrEditor ya maneja toda la lógica de permisos de forma segura y limpia
     permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsAuthorOrEditor]
     authentication_classes = [TokenAuthentication]
+    
+    # ✅ Aceptar todos los métodos necesarios incluyendo PATCH
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
 
-    def get_parser_classes(self):
-        from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
-        return [MultiPartParser, FormParser, JSONParser]
+    def perform_update(self, serializer):
+        """
+        Actualizar el post verificando permisos
+        """
+        # Verificar permisos usando IsAuthorOrEditor
+        if not self.get_object_permissions():
+            raise PermissionDenied("No tienes permisos para editar este artículo.")
+        
+        # Guardar el post actualizado
+        serializer.save()
+
+    def get_object_permissions(self):
+        """
+        Verificar si el usuario tiene permisos para editar/borrar este objeto
+        """
+        obj = self.get_object()
+        user = self.request.user
+        
+        # Superusuarios siempre pueden
+        if user.is_superuser:
+            return True
+        
+        # El autor puede editar
+        if obj.author == user:
+            return True
+        
+        # Usuarios con permisos específicos pueden
+        if user.has_perm('news.change_post'):
+            return True
+        
+        return False
+
+    def update(self, request, *args, **kwargs):
+        """
+        Manejar tanto PUT como PATCH
+        """
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        
+        return Response(serializer.data)
+
+    def partial_update(self, request, *args, **kwargs):
+        """
+        Manejar específicamente PATCH (actualización parcial)
+        """
+        kwargs['partial'] = True
+        return self.update(request, *args, **kwargs)
+
+    def perform_destroy(self, instance):
+        """
+        Eliminar el post verificando permisos
+        """
+        obj = self.get_object()
+        user = self.request.user
+        
+        # Verificar permisos
+        if not (user.is_superuser or obj.author == user or user.has_perm('news.delete_post')):
+            raise PermissionDenied("No tienes permisos para borrar este artículo.")
+        
+        instance.delete()
 
 
 class UserRegistrationView(generics.CreateAPIView): # ✅ CORREGIDO: antes decía UserRegistationView
