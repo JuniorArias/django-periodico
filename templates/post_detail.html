@@ -4,6 +4,9 @@
  {% block content %}
     <div class="row">
       <div class="col-md-8 mx-auto">
+        {% if post.image %}
+          <img src="{{ post.image.url }}" class="card-img-top" alt="{{ post.text|truncatechars:50 }}" style="max-height: 500px; object-fit: cover;">
+        {% endif %}
         <div class="card-body">  
           <h1 class="card-title mb-3">{{ post.text }}</h1>
           <p class="text-muted mb-4">

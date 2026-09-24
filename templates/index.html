@@ -15,6 +15,9 @@
     
             <!-- Bucle recorrer post en all_posts -->
             {% for post in all_posts %}
+                {% if post.image %}
+                    <img src="{{ post.image.url }}" class="card-img-top" alt="{{ post.text|truncatechars:50 }}" style="max-height: 300px; object-fit: cover;">
+                {% endif %}
                 <div class="card mb-3 shadow-sm">
                     <div class="card-body">
                         <h2 class="h4 card-title">
