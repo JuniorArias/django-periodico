@@ -74,12 +74,24 @@ class PostCreateView(LoginRequiredMixin, CreateView):
     template_name = 'post_new.html'
     fields = ['text', 'image'] # Agregué 'image' para que funcione desde la web también
 
+    def test_func(self):
+        """Solo permite crear posts a ususarios con permiso o superusuarios"""
+        user = self.request.user
+        return user.has_perm('news.add_post') or user.is_superuser
+
+    def hadle_no_permission(self):
+        """Mesaje personalizado cuando no tiene permisos"""
+        from django.contrib import messages
+        messages.error(self.request, 'No tienes permisos para crear artículos. Tu cuenta es de solo lectura.')
+        from django.shortcuts import redirect
+        return redirect('home')
+
     def form_valid(self, form):
         form.instance.author = self.request.user
         return super().form_valid(form)
 
 
-class PostUpdateView(LoginRequiredMixin, UpdateView):
+class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     login_url = 'login'
     model = Post
     template_name = 'post_update.html'
@@ -89,7 +101,13 @@ class PostUpdateView(LoginRequiredMixin, UpdateView):
         obj = self.get_object()
         user = self.request.user
         return (obj.author == user) or user.has_perm('news.change_post') or user.is_superuser
-    
+
+    def handle_no_permission(self):
+        from django.contrib import messages
+        messages.error(self.request, 'No tienes permisos para editar este artículo.')
+        from django.shortcuts import redirect
+        return redirect('home')
+
 
 class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     login_url = 'login'
@@ -101,6 +119,12 @@ class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
         obj = self.get_object()
         user = self.request.user
         return (obj.author == user) or user.has_perm('news.delete_post') or user.is_superuser
+
+    def handle_no_permission(self):
+        from django.contrib import messages
+        messages.error(self.request, 'No tienes permisos para borrar este artículo.')
+        from django.shortcuts import redirect
+        return redirect('home')
 
 
 class SignUpView(CreateView):
