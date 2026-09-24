@@ -8,5 +8,5 @@ urlpatterns = [
     path('posts/<int:pk>/', views.PostDetailAPIView.as_view(), name='post_detail_api'),
     path('api-token-auth/', obtain_auth_token, name='api_token_auth'),
     path('register/', views.UserRegistationView.as_view(), name='user_registation'),
-    path('me/', views.CurrentUserSerializer.as_view(), name='current_user'),
+    path('me/', views.CurrentUserView.as_view(), name='current_user'),
 ]
