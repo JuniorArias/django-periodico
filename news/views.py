@@ -7,10 +7,12 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from users.forms import CustomUserCreationForm
 from django.db.models import Q
 from .models import Post
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions, status
 from rest_framework.authentication import TokenAuthentication
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
 from .permissions import IsAuthorOrEditor
-from .serializers import PostSerializer
+from .serializers import PostSerializer, UserRegistationSerializer
 
 
 class HomePageView(ListView): # <-- Cambiamos a Listview
@@ -135,7 +137,10 @@ class PostListAPIView(generics.ListCreateAPIView):
         return queryset
 
     def perform_create(self, serializer):
-        # Asignar el autor automáticamente al usuario logueado en la API
+        # Verificar que el usuario tenga permisos de escritura
+        if not self.request.user.has_perm('news.add_post'):
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("No tienes permisos para crear artículos. Contacta a un administrador.")
         serializer.save(author=self.request.user)
 
     def get_parder_classes(self):
@@ -143,15 +148,49 @@ class PostListAPIView(generics.ListCreateAPIView):
         return [MultiPartParser, FormParser, JSONParser]
 
 class PostDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
-    """
-    API endpoint para ver, editar o borrar un post específico.
-    """
     queryset = Post.objects.all()
     serializer_class = PostSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsAuthorOrEditor]
     authentication_classes = [TokenAuthentication]
 
-    # Aceptar archivos multipart en PUT/PATCH
+    def perform_update(self, serializer):
+        # Verificar que el usuario tenga permisos de edición
+        if not self.request.user.has_perm('news.change_post'):
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("No tienes permisos para editar artículos.")
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        # Verificar que el usuario tenga permisos de borrado
+        if not self.request.user.has_perm('news.delete_post'):
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("No tienes permisos para borrar artículos.")
+        instance.delete()
+
     def get_parser_classes(self):
         from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
         return [MultiPartParser, FormParser, JSONParser]
+
+# Vista para registro de usuarios
+class UserRegistationView(generics.CreateAPIView):
+    """
+    Permite a los usuarios registrarse.
+    Por defecto, se les asigna el grupo 'readers' (solo lectura).
+    """
+    serializer_class = UserRegistationSerializer
+    permission_classes = [AllowAny]  # Cualquiera puede registrarse
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        
+        return Response({
+            'success': True,
+            'message': 'Usuario registrado exitosamente. Tu cuenta tiene permisos de solo lectura. Contacta a un administrador para obtener permisos de escritura.',
+            'user': {
+                'id': user.id,
+                'username': user.username,
+                'email': user.email
+            }
+        }, status=status.HTTP_201_CREATED)
