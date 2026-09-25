@@ -17,5 +17,5 @@ class IsAuthorOrEditor(permissions.BasePermission):
             obj.author == request.user or
             request.user.has_perm('news.charge_post') or
             request.user.has_perm('news.delete_post') or
-            request,user.is_superuser
+            request.user.is_superuser
         )
