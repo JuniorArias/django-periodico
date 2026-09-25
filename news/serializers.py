@@ -1,7 +1,7 @@
 # news/serializers.py
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import Post
+from .models import Post, Comment
 
 User = get_user_model()
 
@@ -10,10 +10,14 @@ class PostSerializer(serializers.ModelSerializer):
     # Mostrar el nombre del autor, no solo su ID numérico
     author = serializers.ReadOnlyField(source='author.username')
     image = serializers.ImageField(max_length=None, use_url=True, allow_null=True, required=False)
+    comment_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
-        fields = ['id', 'author', 'text', 'image', 'created_at'] # Campos a exponer en la API
+        fields = ['id', 'author', 'text', 'image', 'created_at', 'comment_count'] # Campos a exponer en la API
+
+    def get_comment_count(self, obj):
+        return obj.comments.count()
 
 # Serializer para registro de usuarios
 class UserRegistrationSerializer(serializers.ModelSerializer):
@@ -52,3 +56,13 @@ class CurrentUserSerializer(serializers.ModelSerializer):
     def get_can_write(self, obj):
         # Verifica si el usuario tiene permisos de esxritura
         return obj.has_perm('news.add_post') or obj.has_perm('news.change_post')
+
+class CommentSerializer(serializers.ModelSerializer):
+    author = serializers.ReadOnlyField(source='author.username')
+    post_id = serializers.ReadOnlyField(source='post.id')
+
+    class Meta:
+        model = Comment
+        fields = ['id', 'post_id', 'author', 'text', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'author', 'created_at', 'updated_at']
+

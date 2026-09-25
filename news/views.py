@@ -14,7 +14,7 @@ from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 
 from users.forms import CustomUserCreationForm
-from .models import Post
+from .models import Post, Comment
 from .permissions import IsAuthorOrEditor
 from .serializers import PostSerializer, UserRegistrationSerializer, CurrentUserSerializer
 
@@ -272,3 +272,41 @@ class CurrentUserView(APIView):
     def get(self, request):
         serializer = CurrentUserSerializer(request.user)
         return Response(serializer.data)
+
+# Lista de comentarios de un post específico
+class CommeentListAPIView(generics.ListCreateAPIView):
+    serializer_class = CommentSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    authentication_classes = [TokenAuthentication]
+
+    def get_queryset(self):
+        """ Obtener comentarios de un post específico"""
+        post_id = self.kwargs.get('post_id')
+        return Comment.objects.filter(post_id=post_id).select_related('author')
+
+    def perform_create(self, serializer):
+        """Asignar el post y el autor automáticamente"""
+        post-id = self.kwargs.get('post_id')
+        try:
+            post = Post.objects.get(id=post_id)
+            serializer.save(author=self.request.user, post=post)
+        except Post.DoesNotExist:
+            from rest_framework.exceptions import NotFound
+            raise NotFound("El artículo no existe")
+
+
+# Detalle de un comentario (para borrar)
+class CommentDetailAPIView(generics.RetrieveDestroyAPIView):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def perform_destroy(self, instance):
+        """Solo el autor del comentario o un superusuario pueden borrarlo"""
+        user = self.request.user
+        if instance.author != user and not user.is_superuser:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("No tienes permiso para borrar este comentario")
+        instance.delete()
+    
