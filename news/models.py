@@ -9,6 +9,7 @@ class Post(models.Model):
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     image = models.ImageField(upload_to='posts/', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    allow_comments = models.BooleanField(default=True, help_text="Permitir comentrios en este artículo")
 
     # Este método le dice a Django cómo mostrar el objeto Admin y en la consola 
     def __str__(self):
