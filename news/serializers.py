@@ -14,7 +14,7 @@ class PostSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Post
-        fields = ['id', 'author', 'text', 'image', 'created_at', 'comment_count'] # Campos a exponer en la API
+        fields = ['id', 'author', 'text', 'image', 'created_at', 'comment_count', 'allow_comments'] # Campos a exponer en la API
 
     def get_comment_count(self, obj):
         return obj.comments.count()
