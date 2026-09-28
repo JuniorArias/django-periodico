@@ -12,11 +12,10 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
-
 from users.forms import CustomUserCreationForm
 from .models import Post, Comment
 from .permissions import IsAuthorOrEditor
-from .serializers import PostSerializer, UserRegistrationSerializer, CurrentUserSerializer
+from .serializers import PostSerializer, UserRegistrationSerializer, CurrentUserSerializer, CommentSerializer
 
 
 # ==========================================
@@ -274,7 +273,7 @@ class CurrentUserView(APIView):
         return Response(serializer.data)
 
 # Lista de comentarios de un post específico
-class CommeentListAPIView(generics.ListCreateAPIView):
+class CommentListAPIView(generics.ListCreateAPIView):
     serializer_class = CommentSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     authentication_classes = [TokenAuthentication]
@@ -286,7 +285,7 @@ class CommeentListAPIView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         """Asignar el post y el autor automáticamente"""
-        post-id = self.kwargs.get('post_id')
+        post_id = self.kwargs.get('post_id')
         try:
             post = Post.objects.get(id=post_id)
             serializer.save(author=self.request.user, post=post)
