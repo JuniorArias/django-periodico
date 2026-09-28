@@ -1,9 +1,15 @@
 # news/serializers.py
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import Post, Comment
+from .models import Post, Comment, PostImage
 
 User = get_user_model()
+
+class PostImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PostImage
+        fields = ['id', 'image', 'caption', 'oreder', 'created_at']
+        read_only_fields = ['id', 'created_at']
 
 # Serializer para posts
 class PostSerializer(serializers.ModelSerializer):
@@ -11,10 +17,14 @@ class PostSerializer(serializers.ModelSerializer):
     author = serializers.ReadOnlyField(source='author.username')
     image = serializers.ImageField(max_length=None, use_url=True, allow_null=True, required=False)
     comment_count = serializers.SerializerMethodField()
-
+    images = PostImageSerializer(many=True, read_only=True)
     class Meta:
         model = Post
-        fields = ['id', 'author', 'text', 'image', 'created_at', 'comment_count', 'allow_comments'] # Campos a exponer en la API
+        fields = [
+            'id', 'author', 'title', 'text', 'content', 'image',
+            'images', 'created_at', 'updated_at', 'comment_count', 'allow_comments'
+        ]
+        read_only_fields = ['id', 'author', 'created_at', 'updaated_at'] # Campos a exponer en la API
 
     def get_comment_count(self, obj):
         return obj.comments.count()

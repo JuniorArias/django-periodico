@@ -74,7 +74,7 @@ class PostCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     login_url = 'login'
     model = Post
     template_name = 'post_new.html'
-    fields = ['text', 'image'] # Agregué 'image' para que funcione desde la web también
+    fields = ['title', 'text', 'content', 'image', 'allow_comments'] # Agregué 'image' para que funcione desde la web también
 
     def test_func(self):
         """Solo permite crear posts a ususarios con permiso o superusuarios"""
@@ -83,7 +83,7 @@ class PostCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
 
     def hadle_no_permission(self):
         """Mesaje personalizado cuando no tiene permisos"""
-        messages.error(self.request, 'No tienes permisos para crear artículos. Tu cuenta es de solo lectura.')
+        messages.error(self.request, 'No tienes permisos para crear artículos.')
         return redirect('home')
 
     def form_valid(self, form):
@@ -95,7 +95,7 @@ class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     login_url = 'login'
     model = Post
     template_name = 'post_update.html'
-    fields = ['text', 'image']
+    fields = ['title', 'text', 'content', 'image', 'allow_comments']
 
     def test_func(self):
         obj = self.get_object()

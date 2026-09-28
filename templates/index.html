@@ -1,97 +1,151 @@
-<!-- templates/home.html -->
+<!-- templates/index.html -->
 {% extends 'base.html' %}
 
 {% block content %}
-    <div class="row">    
-        <div class="col-md-8 mx-auto">
-            <h1 class="mb-4 text-center">
-                {% if query %}
-                    Resultados de búsqueda para: "<strong>{{ query }}</strong>"
-                    <a href="{% url 'home' %}" class="btn btn-sm btn-outline-secondary ms-2">Limpiar búsqueda</a>
-                {% else %}
-                    Últimas Noticias
-                {% endif %}
-            </h1>
-    
-            <!-- Bucle recorrer post en all_posts -->
-            {% for post in all_posts %}
+<div class="row">    
+    <div class="col-md-8 mx-auto">
+        <h1 class="mb-4 text-center">
+            {% if query %}
+                Resultados de búsqueda para: "<strong>{{ query }}</strong>"
+                <a href="{% url 'home' %}" class="btn btn-sm btn-outline-secondary ms-2">Limpiar búsqueda</a>
+            {% else %}
+                Últimas Noticias
+            {% endif %}
+        </h1>
+
+        <!-- Bucle recorrer post en all_posts -->
+        {% for post in all_posts %}
+            <div class="card mb-4 shadow-sm">
+                <!-- Imagen de portada -->
                 {% if post.image %}
-                    <img src="{{ post.image.url }}" class="card-img-top" alt="{{ post.text|truncatechars:50 }}" style="max-height: 300px; object-fit: cover;">
+                    <img src="{{ post.image.url }}" 
+                         class="card-img-top" 
+                         alt="{{ post.title }}" 
+                         style="max-height: 300px; object-fit: cover;">
                 {% endif %}
-                <div class="card mb-3 shadow-sm">
-                    <div class="card-body">
-                        <h2 class="h4 card-title">
-                            <a href="{% url 'post_detail' post.pk %}" class="text-decoration-none text-primary">
-                                {{ post.text|truncatewords:10 }}
+                
+                <div class="card-body">
+                    <!-- Título del artículo -->
+                    <h2 class="h4 card-title mb-3">
+                        <a href="{% url 'post_detail' post.pk %}" class="text-decoration-none text-dark">
+                            {{ post.title }}
+                        </a>
+                    </h2>
+                    
+                    <!-- Resumen corto -->
+                    <p class="card-text text-muted mb-3">
+                        {{ post.text }}
+                    </p>
+                    
+                    <!-- Información del autor y comentarios -->
+                    <div class="d-flex justify-content-between align-items-center">
+                        <p class="card-text mb-0">
+                            <small class="text-muted">
+                                Por: <strong>{{ post.author }}</strong> | 
+                                {{ post.created_at|date:"d M Y" }}
+                            </small>
+                        </p>
+                        
+                        <!-- Indicador de comentarios -->
+                        <div>
+                            {% if post.allow_comments %}
+                                <span class="badge bg-secondary">
+                                    💬 {{ post.comments.count }} comentarios
+                                </span>
+                            {% else %}
+                                <span class="badge bg-light text-muted border">
+                                    🚫 Comentarios deshabilitados
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Botones de acción -->
+                    <div class="mt-3">
+                        <a href="{% url 'post_detail' post.pk %}" class="btn btn-primary btn-sm">
+                            Leer más &rarr;
+                        </a>
+                        
+                        <!-- Botones de editar/borrar (solo para autor o admin) -->
+                        {% if perms.news.change_post or user.is_superuser or post.author == user %}
+                            <a href="{% url 'post_edit' post.pk %}" class="btn btn-warning btn-sm">
+                                Editar
                             </a>
-                        </h2>
-                        <p class="card-text text-muted">{{ post.text|truncatewords:20 }}</p>
-                        <p class="card-text"><small class="text-muted">Por: {{ post.author }} | <a href="{% url 'post_detail' post.pk %}" class="text-decoration-none">Leer más &rarr;</a></small></p>
+                        {% endif %}
+                        
+                        {% if perms.news.delete_post or user.is_superuser or post.author == user %}
+                            <a href="{% url 'post_delete' post.pk %}" class="btn btn-danger btn-sm">
+                                Borrar
+                            </a>
+                        {% endif %}
                     </div>
                 </div>
-            {% empty %}
-                {% if query %}
-                    <div class="alert alert-warning text-center">
-                        No se encontraron artículos que coincidan con "<strong>{{ query }}</strong>".
-                        <br>
-                    </div>
-                {% else %}
-                    <div class="alert alert-info text-center">    
-                        Aún no hay artículos publicados. ¡Sé el primero en crear uno!
-                    </div>
-                {% endif %}
-            {% endfor %}
-
-            {% if is_paginated %}
-            <nav aria-label="Navegación de páginas" class="mt-4">
-                <ul class="pagination justify-content-center">
-                    
-                    <!-- Botón "Primera Página" (<<) -->
-                    <li class="page-item {% if not page_obj.has_previous %}disabled{% endif %}">
-                        {% if page_obj.has_previous %}
-                            <a class="page-link" href="?page=1">&laquo;&laquo;</a>
-                        {% else %}
-                            <span class="page-link">&laquo;&laquo;</span>
-                        {% endif %}
-                    </li>
-                    
-                    <!-- Botón "Anterior" (<) -->
-                    <li class="page-item {% if not page_obj.has_previous %}disabled{% endif %}">
-                        {% if page_obj.has_previous %}
-                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">&laquo;</a>
-                        {% else %}
-                            <span class="page-link">&laquo;</span>
-                        {% endif %}
-                    </li>
-
-                    <!-- Números de Página (1, 2, 3...) -->
-                    {% for num in page_range %}
-                        <li class="page-item {% if page_obj.number == num %}active{% endif %}">
-                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
-                        </li>
-                    {% endfor %}
-
-                    <!-- Botón "Siguiente" (>) -->
-                    <li class="page-item {% if not page_obj.has_next %}disabled{% endif %}">
-                        {% if page_obj.has_next %}
-                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">&raquo;</a>
-                        {% else %}
-                            <span class="page-link">&raquo;</span>
-                        {% endif %}
-                    </li>
-                    
-                    <!-- Botón "Última Página" (>>) -->
-                    <li class="page-item {% if not page_obj.has_next %}disabled{% endif %}">
-                        {% if page_obj.has_next %}
-                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">&raquo;&raquo;</a>
-                        {% else %}
-                            <span class="page-link">&raquo;&raquo;</span>
-                        {% endif %}
-                    </li>
-
-                </ul>
-            </nav>
+            </div>
+        {% empty %}
+            {% if query %}
+                <div class="alert alert-warning text-center">
+                    No se encontraron artículos que coincidan con "<strong>{{ query }}</strong>".
+                    <br>
+                    <a href="{% url 'home' %}" class="btn btn-outline-secondary mt-2">Ver todos los artículos</a>
+                </div>
+            {% else %}
+                <div class="alert alert-info text-center">    
+                    Aún no hay artículos publicados. ¡Sé el primero en crear uno!
+                </div>
             {% endif %}
-       </div>
+        {% endfor %}
+
+        <!-- Paginación -->
+        {% if is_paginated %}
+        <nav aria-label="Navegación de páginas" class="mt-4">
+            <ul class="pagination justify-content-center">
+                
+                <!-- Botón "Primera Página" (<<) -->
+                <li class="page-item {% if not page_obj.has_previous %}disabled{% endif %}">
+                    {% if page_obj.has_previous %}
+                        <a class="page-link" href="?page=1{% if query %}&q={{ query }}{% endif %}">&laquo;&laquo;</a>
+                    {% else %}
+                        <span class="page-link">&laquo;&laquo;</span>
+                    {% endif %}
+                </li>
+                
+                <!-- Botón "Anterior" (<) -->
+                <li class="page-item {% if not page_obj.has_previous %}disabled{% endif %}">
+                    {% if page_obj.has_previous %}
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}">&laquo;</a>
+                    {% else %}
+                        <span class="page-link">&laquo;</span>
+                    {% endif %}
+                </li>
+
+                <!-- Números de Página (1, 2, 3...) -->
+                {% for num in page_range %}
+                    <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                        <a class="page-link" href="?page={{ num }}{% if query %}&q={{ query }}{% endif %}">{{ num }}</a>
+                    </li>
+                {% endfor %}
+
+                <!-- Botón "Siguiente" (>) -->
+                <li class="page-item {% if not page_obj.has_next %}disabled{% endif %}">
+                    {% if page_obj.has_next %}
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}">&raquo;</a>
+                    {% else %}
+                        <span class="page-link">&raquo;</span>
+                    {% endif %}
+                </li>
+                
+                <!-- Botón "Última Página" (>>) -->
+                <li class="page-item {% if not page_obj.has_next %}disabled{% endif %}">
+                    {% if page_obj.has_next %}
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if query %}&q={{ query }}{% endif %}">&raquo;&raquo;</a>
+                    {% else %}
+                        <span class="page-link">&raquo;&raquo;</span>
+                    {% endif %}
+                </li>
+
+            </ul>
+        </nav>
+        {% endif %}
     </div>
+</div>
 {% endblock content %}

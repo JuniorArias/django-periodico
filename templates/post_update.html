@@ -1,24 +1,130 @@
 <!-- templates/post_update.html -->
- {% extends 'base.html' %}
+{% extends 'base.html' %}
 
- {% block content %}
+{% block content %}
+<div class="container mt-4">
     <div class="row">
-        <div class="col-md-6 mx-auto">
-            <div class="card-shadow">
+        <div class="col-md-8 mx-auto">
+            <div class="card shadow">
                 <div class="card-body">
                     <h2 class="card-title mb-4">Editar Artículo</h2>
-                    <form method="post">
+                    
+                    <form method="post" enctype="multipart/form-data">
                         {% csrf_token %}
+                        
+                        <!-- Título -->
                         <div class="mb-3">
-                            {{ form.as_p }}
+                            <label for="id_title" class="form-label fw-bold">Título *</label>
+                            <input type="text" 
+                                   class="form-control {% if form.title.errors %}is-invalid{% endif %}" 
+                                   id="id_title" 
+                                   name="title" 
+                                   value="{{ form.title.value|default:'' }}" 
+                                   required 
+                                   maxlength="200"
+                                   placeholder="Escribe el título del artículo">
+                            {% if form.title.errors %}
+                                <div class="invalid-feedback">
+                                    {{ form.title.errors.0 }}
+                                </div>
+                            {% endif %}
                         </div>
-                        <button type="submit"class="btn btn-success w-100">Guardar Cambios</button>
+
+                        <!-- Resumen corto -->
+                        <div class="mb-3">
+                            <label for="id_text" class="form-label fw-bold">Resumen corto *</label>
+                            <textarea class="form-control {% if form.text.errors %}is-invalid{% endif %}" 
+                                      id="id_text" 
+                                      name="text" 
+                                      rows="3" 
+                                      required
+                                      placeholder="Escribe un resumen que aparecerá en la lista de artículos">{{ form.text.value|default:'' }}</textarea>
+                            <small class="form-text text-muted">Este texto aparecerá en la lista de artículos</small>
+                            {% if form.text.errors %}
+                                <div class="invalid-feedback">
+                                    {{ form.text.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Contenido completo -->
+                        <div class="mb-3">
+                            <label for="id_content" class="form-label fw-bold">Contenido completo *</label>
+                            <textarea class="form-control {% if form.content.errors %}is-invalid{% endif %}" 
+                                      id="id_content" 
+                                      name="content" 
+                                      rows="12" 
+                                      required
+                                      placeholder="Escribe el contenido completo del artículo">{{ form.content.value|default:'' }}</textarea>
+                            {% if form.content.errors %}
+                                <div class="invalid-feedback">
+                                    {{ form.content.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Imagen principal -->
+                        <div class="mb-3">
+                            <label for="id_image" class="form-label fw-bold">Imagen principal (portada)</label>
+                            
+                            {% if form.instance.image %}
+                                <div class="mb-2">
+                                    <img src="{{ form.instance.image.url }}" 
+                                         alt="Imagen actual" 
+                                         class="img-thumbnail" 
+                                         style="max-height: 200px;">
+                                    <small class="d-block text-muted mt-1">Imagen actual</small>
+                                </div>
+                            {% endif %}
+                            
+                            <input type="file" 
+                                   class="form-control" 
+                                   id="id_image" 
+                                   name="image" 
+                                   accept="image/*">
+                            <small class="form-text text-muted">
+                                Deja vacío para mantener la imagen actual. Selecciona una nueva para reemplazarla.
+                            </small>
+                            {% if form.image.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.image.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Permitir comentarios -->
+                        <div class="mb-4">
+                            <div class="form-check">
+                                <input type="checkbox" 
+                                       class="form-check-input" 
+                                       id="id_allow_comments" 
+                                       name="allow_comments" 
+                                       {% if form.allow_comments.value %}checked{% endif %}>
+                                <label class="form-check-label" for="id_allow_comments">
+                                    Permitir comentarios en este artículo
+                                </label>
+                            </div>
+                            <small class="form-text text-muted">
+                                Si desmarcas esta opción, los usuarios no podrán comentar en este artículo
+                            </small>
+                        </div>
+
+                        <!-- Botones de acción -->
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="bi bi-check-circle"></i> Guardar Cambios
+                            </button>
+                        </div>
                     </form>
                 </div>
             </div>
+            
             <div class="text-center mt-3">
-                <a href="{% url 'home' %}" class="text-decoration-none">&larr;Cancelar y volver</a>
+                <a href="{% url 'home' %}" class="text-decoration-none">
+                    &larr; Cancelar y volver al inicio
+                </a>
             </div>
         </div>
     </div>
- {% endblock content %}
+</div>
+{% endblock content %}

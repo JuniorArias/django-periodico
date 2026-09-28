@@ -1,15 +1,26 @@
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin
-from django.contrib.auth.models import Group
-from .models import Post
-from users.models import CustomUser
+from .models import Post, Comment, PostImage
 
-admin.site.register(Post)
+
+class PostImageInline(admin.TabularInline):
+    model = PostImage
+    extra = 1  # Mostrar 1 formulario vacío para agregar imágenes
+
+
+@admin.register(Post)
 class PostAdmin(admin.ModelAdmin):
-    list_display = ('text', 'autor')
+    list_display = ['title', 'author', 'created_at', 'allow_comments']
+    list_filter = ['created_at', 'allow_comments', 'author']
+    search_fields = ['title', 'text', 'content']
+    inlines = [PostImageInline]  # Permite agregar imágenes desde el admin
 
-    def save_model(self, request, obj, form, change):
-        if not obj.author:
-            obj.author = request.user
-        super().save_model(request, obj, form, change)
 
+@admin.register(Comment)
+class CommentAdmin(admin.ModelAdmin):
+    list_display = ['author', 'post', 'created_at']
+    list_filter = ['created_at']
+
+
+@admin.register(PostImage)
+class PostImageAdmin(admin.ModelAdmin):
+    list_display = ['post', 'caption', 'order', 'created_at']
