@@ -319,9 +319,10 @@ class PostImageListAPIView(generics.ListCreateAPIView):
         return PostImage.objects.filter(post_id=post_id)
 
     def perform_create(self, serializer):
-        post_id = self.kwargs.get('post_id')
         try:
+            post_id = self.kwargs.get('post_id')
             post = Post.objects.get(id=post_id)
+            
             # Verificar permisos
             if not (self.request.user.is_superuser or 
                     post.author == self.request.user or 
@@ -329,10 +330,31 @@ class PostImageListAPIView(generics.ListCreateAPIView):
                 from rest_framework.exceptions import PermissionDenied
                 raise PermissionDenied("No tienes permiso para agregar imágenes a este artículo")
             
+            # Guardar la imagen
             serializer.save(post=post)
+            
         except Post.DoesNotExist:
             from rest_framework.exceptions import NotFound
             raise NotFound("El artículo no existe")
+        except Exception as e:
+            # Capturar cualquier otro error y mostrarlo
+            import traceback
+            error_detail = traceback.format_exc()
+            print(f"❌ ERROR AL SUBIR IMAGEN: {error_detail}")
+            from rest_framework.exceptions import APIException
+            raise APIException(f"Error al procesar la imagen: {str(e)}")
+
+    def create(self, request, *args, **kwargs):
+        try:
+            return super().create(request, *args, **kwargs)
+        except Exception as e:
+            import traceback
+            error_detail = traceback.format_exc()
+            print(f"❌ ERROR EN CREATE: {error_detail}")
+            return Response(
+                {'error': str(e), 'detail': error_detail}, 
+                status=500
+            )
 
 
 class PostImageDetailAPIView(generics.RetrieveDestroyAPIView):
