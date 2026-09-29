@@ -11,4 +11,8 @@ urlpatterns = [
     path('me/', views.CurrentUserView.as_view(), name='current_user'),
     path('posts/<int:post_id>/comments/', views.CommentListAPIView.as_view(), name='comment_list_api'),
     path('comments/<int:pk>/', views.CommentDetailAPIView.as_view(), name='comment_detail_api'),
+        # Rutas para galería de imágenes
+    path('posts/<int:post_id>/images/', views.PostImageListAPIView.as_view(), name='post_image_list'),
+    path('images/<int:pk>/', views.PostImageDetailAPIView.as_view(), name='post_image_detail'),
+    path('posts/<int:post_id>/images/reorder/', views.PostImageReorderAPIView.as_view(), name='post_image_reorder'),
 ]

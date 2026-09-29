@@ -13,9 +13,9 @@ from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from users.forms import CustomUserCreationForm
-from .models import Post, Comment
+from .models import Post, Comment, PostImage
 from .permissions import IsAuthorOrEditor
-from .serializers import PostSerializer, UserRegistrationSerializer, CurrentUserSerializer, CommentSerializer
+from .serializers import PostSerializer, UserRegistrationSerializer, CurrentUserSerializer, CommentSerializer, PostImageSerializer
 
 
 # ==========================================
@@ -308,4 +308,76 @@ class CommentDetailAPIView(generics.RetrieveDestroyAPIView):
             from rest_framework.exceptions import PermissionDenied
             raise PermissionDenied("No tienes permiso para borrar este comentario")
         instance.delete()
-    
+        
+class PostImageListAPIView(generics.ListCreateAPIView):
+    serializer_class = PostImageSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    authentication_classes = [TokenAuthentication]
+
+    def get_queryset(self):
+        post_id = self.kwargs.get('post_id')
+        return PostImage.objects.filter(post_id=post_id)
+
+    def perform_create(self, serializer):
+        post_id = self.kwargs.get('post_id')
+        try:
+            post = Post.objects.get(id=post_id)
+            # Verificar permisos
+            if not (self.request.user.is_superuser or 
+                    post.author == self.request.user or 
+                    self.request.user.has_perm('news.change_post')):
+                from rest_framework.exceptions import PermissionDenied
+                raise PermissionDenied("No tienes permiso para agregar imágenes a este artículo")
+            
+            serializer.save(post=post)
+        except Post.DoesNotExist:
+            from rest_framework.exceptions import NotFound
+            raise NotFound("El artículo no existe")
+
+
+class PostImageDetailAPIView(generics.RetrieveDestroyAPIView):
+    queryset = PostImage.objects.all()
+    serializer_class = PostImageSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def perform_destroy(self, instance):
+        post = instance.post
+        user = self.request.user
+        
+        # Verificar permisos
+        if not (user.is_superuser or 
+                post.author == user or 
+                user.has_perm('news.delete_post')):
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("No tienes permiso para eliminar esta imagen")
+        
+        instance.delete()
+
+
+class PostImageReorderAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
+
+    def post(self, request, post_id):
+        try:
+            post = Post.objects.get(id=post_id)
+            
+            # Verificar permisos
+            if not (request.user.is_superuser or 
+                    post.author == request.user or 
+                    request.user.has_perm('news.change_post')):
+                return Response({'error': 'No tienes permiso'}, status=403)
+            
+            images_data = request.data.get('images', [])
+            
+            for img_data in images_data:
+                image_id = img_data.get('id')
+                new_order = img_data.get('order')
+                
+                if image_id and new_order is not None:
+                    PostImage.objects.filter(id=image_id, post=post).update(order=new_order)
+            
+            return Response({'success': True, 'message': 'Imágenes reordenadas'})
+        except Post.DoesNotExist:
+            return Response({'error': 'Artículo no encontrado'}, status=404)
