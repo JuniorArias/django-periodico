@@ -8,7 +8,7 @@ User = get_user_model()
 class PostImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = PostImage
-        fields = ['id', 'image', 'caption', 'oreder', 'created_at']
+        fields = ['id', 'image', 'caption', 'order', 'created_at']
         read_only_fields = ['id', 'created_at']
 
 # Serializer para posts
