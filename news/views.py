@@ -13,9 +13,9 @@ from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from users.forms import CustomUserCreationForm
-from .models import Post, Comment, PostImage
+from .models import Post, Comment, PostImage, Category
 from .permissions import IsAuthorOrEditor
-from .serializers import PostSerializer, UserRegistrationSerializer, CurrentUserSerializer, CommentSerializer, PostImageSerializer
+from .serializers import PostSerializer, UserRegistrationSerializer, CurrentUserSerializer, CommentSerializer, PostImageSerializer, CategorySerializer
 
 
 # ==========================================
@@ -137,20 +137,32 @@ class SignUpView(CreateView):
 # VISTAS API (REST Framework para Flutter)
 # ==========================================
 
-class PostListAPIView(generics.ListCreateAPIView):
+class PostListAPIView(generics.ListAPIView):
+    queryset = Post.objects.all().select_related('autor', 'category')
     serializer_class = PostSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     authentication_classes = [TokenAuthentication]
+    pagination_class = PostPageNumberPagination
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['title', 'text', 'content']
+    ordering_fileds = ['created_at', 'title']
+    ordering = ['-created_at']
 
     def get_queryset(self):
-        queryset = Post.objects.all().order_by('-id')
+        queryset = super().get_queryset()
+
+        # Filtrar por categoria si se proporciona el parametro
+        category_slug = sel.request.query_params.get('category')
+        """queryset = Post.objects.all().order_by('-id')
         search_query = self.request.query_params.get('q', None)
 
         if search_query:
             queryset = queryset.filter(
                 Q(text__icontains=search_query) |
                 Q(author__username__icontains=search_query)
-            )
+            )"""
+        if category_slug:
+            queryset = queryset.filter(category__slug=category_slug)
         return queryset
 
     def perform_create(self, serializer):
@@ -403,3 +415,17 @@ class PostImageReorderAPIView(APIView):
             return Response({'success': True, 'message': 'Imágenes reordenadas'})
         except Post.DoesNotExist:
             return Response({'error': 'Artículo no encontrado'}, status=404)
+
+class CategoryListAPIView(generics.ListAPIView):
+    """Lista todas las categorias con su contador de posts"""
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    permission_classes = [permissions.AllowAny]
+
+class CategoryPostAPIView(generics.ListAPIView):
+    """Lista todos los posts de una categoria específica"""
+    serializer_class = PostSerializer
+    permission_classes = [permissions.AllowAny]
+
+    def get_queryset(self):
+        category_slug = self.kwargs.get

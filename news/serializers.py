@@ -1,9 +1,19 @@
 # news/serializers.py
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import Post, Comment, PostImage
+from .models import Post, Comment, PostImage, Category
 
 User = get_user_model()
+
+class CategorySerializer(serializers.ModelSerializer):
+    post_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Category
+        fields = ['id', 'name', 'slug', 'description', 'post_count']
+
+    def get_post_count(self, obj):
+        return obj.posts.count()
 
 class PostImageSerializer(serializers.ModelSerializer):
     class Meta:
@@ -18,16 +28,28 @@ class PostSerializer(serializers.ModelSerializer):
     image = serializers.ImageField(max_length=None, use_url=True, allow_null=True, required=False)
     comment_count = serializers.SerializerMethodField()
     images = PostImageSerializer(many=True, read_only=True)
+    category = CategorySerializer(read_only=True)
+    category_id = serializers.PrimaryKeyRelatedField(
+        queryset=Category.objects.all(),
+        source='category',
+        write_only=True,
+        required=False,
+        allow_null=True
+    )
     class Meta:
         model = Post
         fields = [
             'id', 'author', 'title', 'text', 'content', 'image',
-            'images', 'created_at', 'updated_at', 'comment_count', 'allow_comments'
+            'category', 'category_id', 'images', 'created_at', 'updated_at',
+            'comment_count', 'allow_comments'
         ]
         read_only_fields = ['id', 'author', 'created_at', 'updaated_at'] # Campos a exponer en la API
 
     def get_comment_count(self, obj):
-        return obj.comments.count()
+        try:
+            return obj.comments.count()
+        except Exception:
+            return 0
 
 # Serializer para registro de usuarios
 class UserRegistrationSerializer(serializers.ModelSerializer):

@@ -3,6 +3,11 @@ from django.db import models
 from django.urls import reverse
 from django.conf import settings
 
+class Category(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    slug = models.SlugField(max_length=100, unique=True, blank=True)
+    description = models.TextField(blank=True, help_text="Descrición opcional de la categoría")
+
 class Post(models.Model):
     # Un campo de texto para el contenido del artículo
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
@@ -10,6 +15,7 @@ class Post(models.Model):
     text = models.TextField(help_text="Resumen corto del artículo")
     content = models.TextField(help_text="Contenido completo del artículo")
     image = models.ImageField(upload_to='posts/', blank=True, null=True)
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True, related_name='posts')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     allow_comments = models.BooleanField(default=True, help_text="Permitir comentrios en este artículo")
