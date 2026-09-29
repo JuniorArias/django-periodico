@@ -5,8 +5,9 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db.models import Q
 from django.contrib import messages
 from django.shortcuts import redirect
-from rest_framework import generics, permissions, status
+from rest_framework import generics, permissions, status, filters
 from rest_framework.authentication import TokenAuthentication
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
@@ -137,8 +138,14 @@ class SignUpView(CreateView):
 # VISTAS API (REST Framework para Flutter)
 # ==========================================
 
+# Clase de paginación para los posts
+class PostPageNumberPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 50
+
 class PostListAPIView(generics.ListAPIView):
-    queryset = Post.objects.all().select_related('autor', 'category')
+    queryset = Post.objects.all().select_related('author', 'category')
     serializer_class = PostSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     authentication_classes = [TokenAuthentication]
@@ -152,7 +159,7 @@ class PostListAPIView(generics.ListAPIView):
         queryset = super().get_queryset()
 
         # Filtrar por categoria si se proporciona el parametro
-        category_slug = sel.request.query_params.get('category')
+        category_slug = self.request.query_params.get('category')
         """queryset = Post.objects.all().order_by('-id')
         search_query = self.request.query_params.get('q', None)
 
@@ -422,7 +429,7 @@ class CategoryListAPIView(generics.ListAPIView):
     serializer_class = CategorySerializer
     permission_classes = [permissions.AllowAny]
 
-class CategoryPostAPIView(generics.ListAPIView):
+class CategoryPostsAPIView(generics.ListAPIView):
     """Lista todos los posts de una categoria específica"""
     serializer_class = PostSerializer
     permission_classes = [permissions.AllowAny]

@@ -15,4 +15,7 @@ urlpatterns = [
     path('posts/<int:post_id>/images/', views.PostImageListAPIView.as_view(), name='post_image_list'),
     path('images/<int:pk>/', views.PostImageDetailAPIView.as_view(), name='post_image_detail'),
     path('posts/<int:post_id>/images/reorder/', views.PostImageReorderAPIView.as_view(), name='post_image_reorder'),
+        # Categorías
+    path('categories/', views.CategoryListAPIView.as_view(), name='category_list'),
+    path('categories/<slug:slug>/posts/', views.CategoryPostsAPIView.as_view(), name='category_posts'),
 ]
