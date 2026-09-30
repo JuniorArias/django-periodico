@@ -90,14 +90,14 @@ class CurrentUserSerializer(serializers.ModelSerializer):
         return obj.has_perm('news.add_post') or obj.has_perm('news.change_post')
 
 # Serializer simple para respuestas
-class CommentReplySerializer(serializers.ModelSerializer):
+"""class CommentReplySerializer(serializers.ModelSerializer):
     author = serializers.ReadOnlyField(source='author.username')
 
     class Meta:
         model = Comment
         fields = ['id', 'author', 'text', 'created_at', 'updated_at']
         read_only_fields = ['id', 'author', 'created_at', 'updated_at']
-
+"""
 
 # Serializer principal para comentarios
 class CommentSerializer(serializers.ModelSerializer):
@@ -107,11 +107,14 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = ['id', 'post', 'author', 'parent', 'text', 'replies', 'created_at', 'updated_at']
-        read_only_fields = ['id', 'author', 'created_at', 'updated_at', 'post']
+        read_only_fields = ['id', 'author', 'post', 'created_at', 'updated_at']
         extra_kwargs = {
-            'parent': {'required': False, 'allow_null': True}
+            'parent': {'required': False, 'allow_null': True,
+                       'help_text': 'ID del comentario padre (para respuestas)'
+            }
         }
 
     def get_replies(self, obj):
-        replies = Comment.objects.filter(parent=obj)
-        return CommentReplySerializer(replies, many=True).data
+        if obj.replies.exits():
+            return CommentSerializer(obj.replies.all(), many=True, context=self.context).data
+        return []
