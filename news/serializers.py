@@ -115,11 +115,12 @@ class CommentSerializer(serializers.ModelSerializer):
     author = serializers.ReadOnlyField(source='author.username')
     replies = serializers.SerializerMethodField()
     
+    # ✅ Campo para ESCRITURA (crear respuestas)
     parent = serializers.PrimaryKeyRelatedField(
         queryset=Comment.objects.all(),
         required=False,
         allow_null=True,
-        write_only=True
+        write_only=True  # No se incluye en GET, solo en POST
     )
     
     class Meta:

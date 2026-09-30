@@ -293,12 +293,13 @@ class CurrentUserView(APIView):
 
 # Lista de comentarios de un post específico
 class CommentListAPIView(generics.ListCreateAPIView):
-    serializer_class = CommentSerializer  # ✅ Serializer recursivo para listar
+    serializer_class = CommentSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     authentication_classes = [TokenAuthentication]
 
     def get_queryset(self):
         post_id = self.kwargs.get('post_id')
+        # ✅ Solo comentarios de nivel superior (sin padre)
         return Comment.objects.filter(
             post_id=post_id, 
             parent__isnull=True
@@ -306,12 +307,29 @@ class CommentListAPIView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         post_id = self.kwargs.get('post_id')
+        
         try:
             post = Post.objects.get(id=post_id)
+            
             if not post.allow_comments:
                 from rest_framework.exceptions import PermissionDenied
                 raise PermissionDenied("Los comentarios están deshabilitados")
-            serializer.save(post=post, author=self.request.user)
+            
+            # ✅ OBTENER EL PARENT DE LOS DATOS VALIDADOS
+            parent = serializer.validated_data.get('parent')
+            
+            # Si hay parent, verificar que pertenezca al mismo post
+            if parent and parent.post_id != post.id:
+                from rest_framework.exceptions import ValidationError
+                raise ValidationError("El comentario padre no pertenece a este artículo")
+            
+            # ✅ PASAR EL PARENT AL GUARDAR
+            serializer.save(
+                post=post, 
+                author=self.request.user,
+                parent=parent  # ← ESTO ES CRÍTICO
+            )
+            
         except Post.DoesNotExist:
             from rest_framework.exceptions import NotFound
             raise NotFound("El artículo no existe")
