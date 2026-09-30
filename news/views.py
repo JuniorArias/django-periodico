@@ -16,7 +16,7 @@ from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from users.forms import CustomUserCreationForm
 from .models import Post, Comment, PostImage, Category
 from .permissions import IsAuthorOrEditor
-from .serializers import PostSerializer, UserRegistrationSerializer, CurrentUserSerializer, CommentSerializer, PostImageSerializer, CategorySerializer
+from .serializers import PostSerializer, UserRegistrationSerializer, CurrentUserSerializer, CommentSerializer, CommentDetailSerializer, PostImageSerializer, CategorySerializer
 
 
 # ==========================================
@@ -293,14 +293,12 @@ class CurrentUserView(APIView):
 
 # Lista de comentarios de un post específico
 class CommentListAPIView(generics.ListCreateAPIView):
-    serializer_class = CommentSerializer
+    serializer_class = CommentSerializer  # ✅ Serializer recursivo para listar
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     authentication_classes = [TokenAuthentication]
 
     def get_queryset(self):
         post_id = self.kwargs.get('post_id')
-        # ✅ Solo comentarios de nivel superior (sin padre)
-        # Las respuestas se incluyen automáticamente vía get_replies()
         return Comment.objects.filter(
             post_id=post_id, 
             parent__isnull=True
@@ -308,17 +306,12 @@ class CommentListAPIView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         post_id = self.kwargs.get('post_id')
-        
         try:
             post = Post.objects.get(id=post_id)
-            
             if not post.allow_comments:
                 from rest_framework.exceptions import PermissionDenied
                 raise PermissionDenied("Los comentarios están deshabilitados")
-            
-            # El parent ya viene en validated_data gracias al PrimaryKeyRelatedField
             serializer.save(post=post, author=self.request.user)
-            
         except Post.DoesNotExist:
             from rest_framework.exceptions import NotFound
             raise NotFound("El artículo no existe")
@@ -326,15 +319,14 @@ class CommentListAPIView(generics.ListCreateAPIView):
 
 # Detalle de un comentario (para borrar)
 class CommentDetailAPIView(generics.RetrieveDestroyAPIView):
-    queryset = Comment.objects.all()
-    serializer_class = CommentSerializer
+    queryset = Comment.objects.all().select_related('author')
+    serializer_class = CommentDetailSerializer  # ✅ Usar serializer simple
     authentication_classes = [TokenAuthentication]
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     def perform_destroy(self, instance):
-        """Solo el autor del comentario o un superusuario pueden borrarlo"""
-        user = self.request.user
-        if instance.author != user and not user.is_superuser:
+        # Verificar que el usuario sea el autor o admin
+        if instance.author != self.request.user and not self.request.user.is_superuser:
             from rest_framework.exceptions import PermissionDenied
             raise PermissionDenied("No tienes permiso para borrar este comentario")
         instance.delete()

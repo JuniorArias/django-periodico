@@ -100,16 +100,26 @@ class CurrentUserSerializer(serializers.ModelSerializer):
 """
 
 # Serializer principal para comentarios
+# Serializer simple para operaciones de detalle (GET individual, DELETE)
+class CommentDetailSerializer(serializers.ModelSerializer):
+    author = serializers.ReadOnlyField(source='author.username')
+    
+    class Meta:
+        model = Comment
+        fields = ['id', 'post', 'author', 'parent', 'text', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'author', 'post', 'created_at', 'updated_at']
+
+
+# Serializer recursivo para listar comentarios con respuestas anidadas
 class CommentSerializer(serializers.ModelSerializer):
     author = serializers.ReadOnlyField(source='author.username')
     replies = serializers.SerializerMethodField()
     
-    # Campo para ESCRITURA (crear respuestas)
     parent = serializers.PrimaryKeyRelatedField(
         queryset=Comment.objects.all(),
         required=False,
         allow_null=True,
-        write_only=True  # No se incluye en la respuesta GET
+        write_only=True
     )
     
     class Meta:
@@ -118,6 +128,5 @@ class CommentSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'author', 'post', 'created_at', 'updated_at']
 
     def get_replies(self, obj):
-        # ✅ Recursión controlada: serializa las respuestas hijas
         replies = obj.replies.all().order_by('created_at')
         return CommentSerializer(replies, many=True, context=self.context).data
