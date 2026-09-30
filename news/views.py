@@ -300,7 +300,7 @@ class CommentListAPIView(generics.ListCreateAPIView):
     def get_queryset(self):
         """ Obtener comentarios de un post específico"""
         post_id = self.kwargs.get('post_id')
-        return Comment.objects.filter(post_id=post_id).select_related('author')
+        return Comment.objects.filter(post_id=post_id, parent__isnull=True).select_related('author').prefetch_related('replies__author')
 
     def perform_create(self, serializer):
         """Asignar el post y el autor automáticamente"""
