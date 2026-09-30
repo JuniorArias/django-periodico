@@ -299,7 +299,7 @@ class CommentListAPIView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         post_id = self.kwargs.get('post_id')
-        # ✅ Solo comentarios de nivel superior (sin padre)
+        # Solo comentarios de nivel superior (sin padre)
         return Comment.objects.filter(
             post_id=post_id, 
             parent__isnull=True
@@ -315,20 +315,15 @@ class CommentListAPIView(generics.ListCreateAPIView):
                 from rest_framework.exceptions import PermissionDenied
                 raise PermissionDenied("Los comentarios están deshabilitados")
             
-            # ✅ OBTENER EL PARENT DE LOS DATOS VALIDADOS
+            # ✅ Validar que el parent pertenezca al mismo post si existe
             parent = serializer.validated_data.get('parent')
-            
-            # Si hay parent, verificar que pertenezca al mismo post
             if parent and parent.post_id != post.id:
                 from rest_framework.exceptions import ValidationError
                 raise ValidationError("El comentario padre no pertenece a este artículo")
             
-            # ✅ PASAR EL PARENT AL GUARDAR
-            serializer.save(
-                post=post, 
-                author=self.request.user,
-                parent=parent  # ← ESTO ES CRÍTICO
-            )
+            # ✅ NO pasar parent explícitamente - ya está en validated_data
+            # El serializer lo manejará automáticamente
+            serializer.save(post=post, author=self.request.user)
             
         except Post.DoesNotExist:
             from rest_framework.exceptions import NotFound

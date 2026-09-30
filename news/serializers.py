@@ -115,12 +115,11 @@ class CommentSerializer(serializers.ModelSerializer):
     author = serializers.ReadOnlyField(source='author.username')
     replies = serializers.SerializerMethodField()
     
-    # ✅ Campo para ESCRITURA (crear respuestas)
     parent = serializers.PrimaryKeyRelatedField(
         queryset=Comment.objects.all(),
         required=False,
         allow_null=True,
-        write_only=True  # No se incluye en GET, solo en POST
+        write_only=True
     )
     
     class Meta:
@@ -131,3 +130,9 @@ class CommentSerializer(serializers.ModelSerializer):
     def get_replies(self, obj):
         replies = obj.replies.all().order_by('created_at')
         return CommentSerializer(replies, many=True, context=self.context).data
+    
+    # ✅ NUEVO: Método create explícito para manejar parent correctamente
+    def create(self, validated_data):
+        # validated_data ya contiene 'parent' si se proporcionó
+        # Solo creamos el comentario con todos los datos
+        return Comment.objects.create(**validated_data)
