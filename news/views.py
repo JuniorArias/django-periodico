@@ -144,7 +144,7 @@ class PostPageNumberPagination(PageNumberPagination):
     page_size_query_param = 'page_size'
     max_page_size = 50
 
-class PostListAPIView(generics.ListAPIView):
+class PostListAPIView(generics.ListCreateAPIView):
     queryset = Post.objects.all().select_related('author', 'category')
     serializer_class = PostSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
