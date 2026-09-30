@@ -435,4 +435,5 @@ class CategoryPostsAPIView(generics.ListAPIView):
     permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
-        category_slug = self.kwargs.get
+        category_slug = self.kwargs.get('slug')
+        return Post.objects.filter(category__slug=category_slug).select_related('author', 'category')
