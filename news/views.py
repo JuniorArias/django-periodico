@@ -298,27 +298,27 @@ class CommentListAPIView(generics.ListCreateAPIView):
     authentication_classes = [TokenAuthentication]
 
     def get_queryset(self):
-        """ Obtener comentarios de un post específico"""
         post_id = self.kwargs.get('post_id')
-        return Comment.objects.filter(post_id=post_id, parent__isnull=True).select_related('author').prefetch_related('replies__author')
+        # ✅ Solo comentarios de nivel superior (sin padre)
+        # Las respuestas se incluyen automáticamente vía get_replies()
+        return Comment.objects.filter(
+            post_id=post_id, 
+            parent__isnull=True
+        ).select_related('author').prefetch_related('replies__author').order_by('created_at')
 
     def perform_create(self, serializer):
-        """Asignar el post y el autor automáticamente"""
         post_id = self.kwargs.get('post_id')
+        
         try:
             post = Post.objects.get(id=post_id)
-
+            
             if not post.allow_comments:
                 from rest_framework.exceptions import PermissionDenied
-                raise PermissionDenied("Los comentarios están deshabilitados para este artículo")
-
-            parent = serializer.validated_data.get('parent')
-
-            if parent and parent.post_id != post.id:
-                from rest_framework.exceptions import ValidationError
-                raise ValidationError("El comentario padre no pertenece a este artículo")
+                raise PermissionDenied("Los comentarios están deshabilitados")
             
-            serializer.save(post=post, author=self.request.user, parent=parent)
+            # El parent ya viene en validated_data gracias al PrimaryKeyRelatedField
+            serializer.save(post=post, author=self.request.user)
+            
         except Post.DoesNotExist:
             from rest_framework.exceptions import NotFound
             raise NotFound("El artículo no existe")

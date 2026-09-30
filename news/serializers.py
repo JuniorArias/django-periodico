@@ -102,19 +102,22 @@ class CurrentUserSerializer(serializers.ModelSerializer):
 # Serializer principal para comentarios
 class CommentSerializer(serializers.ModelSerializer):
     author = serializers.ReadOnlyField(source='author.username')
-    #post_id = serializers.ReadOnlyField(source='post.id')
     replies = serializers.SerializerMethodField()
+    
+    # Campo para ESCRITURA (crear respuestas)
+    parent = serializers.PrimaryKeyRelatedField(
+        queryset=Comment.objects.all(),
+        required=False,
+        allow_null=True,
+        write_only=True  # No se incluye en la respuesta GET
+    )
+    
     class Meta:
         model = Comment
-        fields = ['id', 'post_id', 'author', 'parent', 'text', 'replies', 'created_at', 'updated_at']
+        fields = ['id', 'post', 'author', 'parent', 'text', 'replies', 'created_at', 'updated_at']
         read_only_fields = ['id', 'author', 'post', 'created_at', 'updated_at']
-        extra_kwargs = {
-            'parent': {'required': False, 'allow_null': True,
-                       'help_text': 'ID del comentario padre (para respuestas)'
-            }
-        }
 
     def get_replies(self, obj):
-        if obj.replies.exits():
-            return CommentSerializer(obj.replies.all(), many=True, context=self.context).data
-        return []
+        # ✅ Recursión controlada: serializa las respuestas hijas
+        replies = obj.replies.all().order_by('created_at')
+        return CommentSerializer(replies, many=True, context=self.context).data
