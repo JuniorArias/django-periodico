@@ -3,7 +3,7 @@ from django.conf import settings
 from django.urls import reverse
 
 
-# 1. PRIMERO: Modelo Category (debe ir antes de Post)
+# 1. PRIMERO: Modelo Category
 class Category(models.Model):
     name = models.CharField(max_length=100, unique=True)
     slug = models.SlugField(max_length=100, unique=True, blank=True)
@@ -18,7 +18,6 @@ class Category(models.Model):
         return self.name
 
     def save(self, *args, **kwargs):
-        # Generar slug automáticamente si no se proporciona
         if not self.slug:
             from django.utils.text import slugify
             self.slug = slugify(self.name)
@@ -27,7 +26,6 @@ class Category(models.Model):
 
 # 2. SEGUNDO: Modelo Post
 class Post(models.Model):
-    # Usamos settings.AUTH_USER_MODEL en lugar de User directamente
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL, 
         on_delete=models.CASCADE
@@ -36,8 +34,6 @@ class Post(models.Model):
     text = models.TextField(help_text="Resumen corto del artículo")
     content = models.TextField(help_text="Contenido completo del artículo")
     image = models.ImageField(upload_to='posts/', blank=True, null=True, help_text="Imagen principal")
-    
-    # Relación con Category
     category = models.ForeignKey(
         Category, 
         on_delete=models.SET_NULL, 
@@ -45,7 +41,6 @@ class Post(models.Model):
         blank=True, 
         related_name='posts'
     )
-    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     allow_comments = models.BooleanField(default=True, help_text="Permitir comentarios en este artículo")
@@ -53,7 +48,6 @@ class Post(models.Model):
     class Meta:
         ordering = ['-created_at']
 
-    # Método crucial para que Django sepa a dónde redirigir después de crear/editar
     def get_absolute_url(self):
         return reverse('post_detail', kwargs={'pk': self.pk})
 
@@ -64,8 +58,6 @@ class Post(models.Model):
 # 3. TERCERO: Modelo Comment
 class Comment(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments')
-    
-    # Usamos settings.AUTH_USER_MODEL aquí también
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL, 
         on_delete=models.CASCADE
@@ -76,7 +68,7 @@ class Comment(models.Model):
         null=True, 
         blank=True, 
         related_name='replies'
-    ) 
+    )
     text = models.TextField(max_length=500)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

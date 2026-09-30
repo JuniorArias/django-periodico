@@ -8,7 +8,7 @@ from django.shortcuts import redirect
 from rest_framework import generics, permissions, status, filters
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import PermissionDenied, NotFound, ValidationError
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
@@ -299,48 +299,54 @@ class CommentListAPIView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         post_id = self.kwargs.get('post_id')
-        # Solo comentarios de nivel superior (sin padre)
         return Comment.objects.filter(
             post_id=post_id, 
             parent__isnull=True
         ).select_related('author').prefetch_related('replies__author').order_by('created_at')
 
-    def perform_create(self, serializer):
+    def create(self, request, *args, **kwargs):
         post_id = self.kwargs.get('post_id')
         
         try:
             post = Post.objects.get(id=post_id)
-            
-            if not post.allow_comments:
-                from rest_framework.exceptions import PermissionDenied
-                raise PermissionDenied("Los comentarios están deshabilitados")
-            
-            # ✅ Validar que el parent pertenezca al mismo post si existe
-            parent = serializer.validated_data.get('parent')
-            if parent and parent.post_id != post.id:
-                from rest_framework.exceptions import ValidationError
-                raise ValidationError("El comentario padre no pertenece a este artículo")
-            
-            # ✅ NO pasar parent explícitamente - ya está en validated_data
-            # El serializer lo manejará automáticamente
-            serializer.save(post=post, author=self.request.user)
-            
         except Post.DoesNotExist:
-            from rest_framework.exceptions import NotFound
             raise NotFound("El artículo no existe")
+        
+        if not post.allow_comments:
+            raise PermissionDenied("Los comentarios están deshabilitados")
+        
+        # Validar el serializer
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        # Obtener el parent si existe
+        parent = serializer.validated_data.get('parent')
+        
+        # Validar que el parent pertenezca al mismo post
+        if parent and parent.post_id != post.id:
+            raise ValidationError("El comentario padre no pertenece a este artículo")
+        
+        # Crear el comentario manualmente
+        comment = Comment.objects.create(
+            post=post,
+            author=request.user,
+            parent=parent,
+            text=serializer.validated_data['text']
+        )
+        
+        # Serializar la respuesta
+        output_serializer = self.get_serializer(comment)
+        return Response(output_serializer.data, status=201)
 
 
-# Detalle de un comentario (para borrar)
 class CommentDetailAPIView(generics.RetrieveDestroyAPIView):
     queryset = Comment.objects.all().select_related('author')
-    serializer_class = CommentDetailSerializer  # ✅ Usar serializer simple
+    serializer_class = CommentDetailSerializer
     authentication_classes = [TokenAuthentication]
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     def perform_destroy(self, instance):
-        # Verificar que el usuario sea el autor o admin
         if instance.author != self.request.user and not self.request.user.is_superuser:
-            from rest_framework.exceptions import PermissionDenied
             raise PermissionDenied("No tienes permiso para borrar este comentario")
         instance.delete()
         
