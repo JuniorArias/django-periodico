@@ -307,7 +307,11 @@ class CommentListAPIView(generics.ListCreateAPIView):
         post_id = self.kwargs.get('post_id')
         try:
             post = Post.objects.get(id=post_id)
-            serializer.save(author=self.request.user, post=post)
+
+            if not post.allow_comments:
+                from rest_framework.exceptions import PermissionDenied
+                raise PermissionDenied("Los comentarios están deshabilitados para este artículo")
+            serializer.save(post=post, author=self.request.user)
         except Post.DoesNotExist:
             from rest_framework.exceptions import NotFound
             raise NotFound("El artículo no existe")

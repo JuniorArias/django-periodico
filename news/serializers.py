@@ -91,10 +91,14 @@ class CurrentUserSerializer(serializers.ModelSerializer):
 
 class CommentSerializer(serializers.ModelSerializer):
     author = serializers.ReadOnlyField(source='author.username')
-    post_id = serializers.ReadOnlyField(source='post.id')
-
+    #post_id = serializers.ReadOnlyField(source='post.id')
+    replies = serializers.SerializerMethodField()
     class Meta:
         model = Comment
-        fields = ['id', 'post_id', 'author', 'text', 'created_at', 'updated_at']
-        read_only_fields = ['id', 'author', 'created_at', 'updated_at']
+        fields = ['id', 'post_id', 'author', 'text', 'replies', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'author', 'created_at', 'updated_at', 'post']
 
+    def get_replies(self, obj):
+        if obj.replies.exits():
+            return CommentSerializer(obj.replies.all(), many=True).data
+        return []
