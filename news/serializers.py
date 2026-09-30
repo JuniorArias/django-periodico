@@ -106,7 +106,7 @@ class CommentSerializer(serializers.ModelSerializer):
     replies = serializers.SerializerMethodField()
     class Meta:
         model = Comment
-        fields = ['id', 'post', 'author', 'parent', 'text', 'replies', 'created_at', 'updated_at']
+        fields = ['id', 'post_id', 'author', 'parent', 'text', 'replies', 'created_at', 'updated_at']
         read_only_fields = ['id', 'author', 'post', 'created_at', 'updated_at']
         extra_kwargs = {
             'parent': {'required': False, 'allow_null': True,
