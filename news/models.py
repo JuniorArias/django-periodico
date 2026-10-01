@@ -111,4 +111,4 @@ class Like(models.Model):
         ordering = ['-created_at']
 
     def __str__(self):
-        return f"{self.user.username} liked '{self.post.title[:30]}"
+        return f"{self.user.username} liked '{self.post.title[:30]}'"
