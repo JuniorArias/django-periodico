@@ -14,7 +14,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from users.forms import CustomUserCreationForm
-from .models import Post, Comment, PostImage, Category
+from .models import Post, Comment, PostImage, Category, Like
 from .permissions import IsAuthorOrEditor
 from .serializers import (
     PostSerializer, UserRegistrationSerializer, CurrentUserSerializer, CommentSerializer, 
