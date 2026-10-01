@@ -140,7 +140,7 @@ class CommentReplySerializer(serializers.ModelSerializer):
         fields = ['id', 'author', 'text', 'created_at', 'updated_at']
         read_only_fields = ['id', 'author', 'created_at', 'updated_at']
 
-class LikeSerializer(serializers.ModelSrializer):
+class LikeSerializer(serializers.ModelSerializer):
     model = Like
     fields = ['id', 'post', 'user', 'created_at']
     read_only_fields = ['id', 'user', 'post', 'created_at']
