@@ -299,7 +299,6 @@ class CommentListAPIView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         post_id = self.kwargs.get('post_id')
-        # ✅ Prefetch profundo para cargar TODOS los niveles de respuestas
         return Comment.objects.filter(
             post_id=post_id, 
             parent__isnull=True
@@ -312,6 +311,11 @@ class CommentListAPIView(generics.ListCreateAPIView):
     def create(self, request, *args, **kwargs):
         post_id = self.kwargs.get('post_id')
         
+        print(f"\n{'='*60}")
+        print(f"🚀 CREANDO COMENTARIO EN POST {post_id}")
+        print(f"📦 Datos recibidos: {request.data}")
+        print(f"{'='*60}")
+        
         try:
             post = Post.objects.get(id=post_id)
         except Post.DoesNotExist:
@@ -323,10 +327,15 @@ class CommentListAPIView(generics.ListCreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         
+        print(f"✅ Datos validados: {serializer.validated_data}")
+        
         parent = serializer.validated_data.get('parent')
         
-        if parent and parent.post_id != post.id:
-            raise ValidationError("El comentario padre no pertenece a este artículo")
+        print(f"🔗 Parent extraído: {parent}")
+        if parent:
+            print(f"   - Parent ID: {parent.id}")
+            print(f"   - Parent text: {parent.text}")
+            print(f"   - Parent's parent: {parent.parent}")
         
         comment = Comment.objects.create(
             post=post,
@@ -334,6 +343,12 @@ class CommentListAPIView(generics.ListCreateAPIView):
             parent=parent,
             text=serializer.validated_data['text']
         )
+        
+        print(f"💾 Comentario creado:")
+        print(f"   - ID: {comment.id}")
+        print(f"   - Text: {comment.text}")
+        print(f"   - Parent ID: {comment.parent.id if comment.parent else None}")
+        print(f"{'='*60}\n")
         
         output_serializer = self.get_serializer(comment)
         return Response(output_serializer.data, status=201)
