@@ -16,8 +16,10 @@ from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from users.forms import CustomUserCreationForm
 from .models import Post, Comment, PostImage, Category
 from .permissions import IsAuthorOrEditor
-from .serializers import PostSerializer, UserRegistrationSerializer, CurrentUserSerializer, CommentSerializer, CommentDetailSerializer, PostImageSerializer, CategorySerializer
-
+from .serializers import (
+    PostSerializer, UserRegistrationSerializer, CurrentUserSerializer, CommentSerializer, 
+    CommentDetailSerializer, PostImageSerializer, CategorySerializer, LikeSerializer
+)
 
 # ==========================================
 # VISTAS WEB (Frontend Django)
@@ -474,3 +476,34 @@ class CategoryPostsAPIView(generics.ListAPIView):
     def get_queryset(self):
         category_slug = self.kwargs.get('slug')
         return Post.objects.filter(category__slug=category_slug).select_related('author', 'category')
+
+class LikeToggleAPIView(APIView):
+    """Toggle like/unlike en un post"""
+    permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
+
+    def post(self, request, post_id):
+        try:
+            post = Post.objects.get(id=post_id)
+        except Post.DoesNotExist:
+            return Response({'error': 'Artículo no encontrado'}, status=404)
+
+        # Verificar si ya dio like
+        existing_like = Like.objects.filter(post=post, user=request.user).first()
+
+        if existing_like:
+            # Ya dio like → quitar like (unlike)
+            existing_like.delete()
+            return Response({
+                'liked': False,
+                'like_count': post.likes.count(),
+                'message': 'Like eliminado'
+            })
+        else:
+            # No ha dado like → dar like
+            Like.objects.create(post=post, user=request.user)
+            return Response({
+                'liked': True,
+                'like_count': post.likes.count(),
+                'message': 'Like agregado'
+            })

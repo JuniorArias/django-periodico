@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import Post, Comment, PostImage, Category
+from .models import Post, Comment, PostImage, Category, Like
 
 User = get_user_model()
 
@@ -27,6 +27,8 @@ class PostSerializer(serializers.ModelSerializer):
     author = serializers.ReadOnlyField(source='author.username')
     image = serializers.ImageField(max_length=None, use_url=True, allow_null=True, required=False)
     comment_count = serializers.SerializerMethodField()
+    like_count = serializers.SerializerMethodField()
+    is_liked = serializers.SerializerMethodField()
     images = PostImageSerializer(many=True, read_only=True)
     category = CategorySerializer(read_only=True)
     category_id = serializers.PrimaryKeyRelatedField(
@@ -42,7 +44,7 @@ class PostSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'author', 'title', 'text', 'content', 'image',
             'category', 'category_id', 'images', 'created_at', 'updated_at',
-            'comment_count', 'allow_comments'
+            'comment_count', 'allow_comments', 'like_count', 'is_liked'
         ]
         read_only_fields = ['id', 'author', 'created_at', 'updated_at']
 
@@ -51,6 +53,15 @@ class PostSerializer(serializers.ModelSerializer):
             return obj.comments.count()
         except Exception:
             return 0
+
+    def get_like_count(self, obj):
+        return obj.likes.count()
+
+    def get_is_liked(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            return obj.likes.filter(user=request.user).exists()
+        return False
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
@@ -128,3 +139,8 @@ class CommentReplySerializer(serializers.ModelSerializer):
         model = Comment
         fields = ['id', 'author', 'text', 'created_at', 'updated_at']
         read_only_fields = ['id', 'author', 'created_at', 'updated_at']
+
+class LikeSerializer(serializers.ModelSrializer):
+    model = Like
+    fields = ['id', 'post', 'user', 'created_at']
+    read_only_fields = ['id', 'user', 'post', 'created_at']
