@@ -299,14 +299,15 @@ class CommentListAPIView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         post_id = self.kwargs.get('post_id')
+        # ✅ Prefetch profundo para cargar TODOS los niveles de respuestas
         return Comment.objects.filter(
             post_id=post_id, 
             parent__isnull=True
         ).select_related('author').prefetch_related(
             'replies__author',
-            'replies__replies_author',
+            'replies__replies__author',
             'replies__replies__replies__author',
-            ).order_by('created_at')
+        ).order_by('created_at')
 
     def create(self, request, *args, **kwargs):
         post_id = self.kwargs.get('post_id')
@@ -319,18 +320,14 @@ class CommentListAPIView(generics.ListCreateAPIView):
         if not post.allow_comments:
             raise PermissionDenied("Los comentarios están deshabilitados")
         
-        # Validar el serializer
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         
-        # Obtener el parent si existe
         parent = serializer.validated_data.get('parent')
         
-        # Validar que el parent pertenezca al mismo post
         if parent and parent.post_id != post.id:
             raise ValidationError("El comentario padre no pertenece a este artículo")
         
-        # Crear el comentario manualmente
         comment = Comment.objects.create(
             post=post,
             author=request.user,
@@ -338,7 +335,6 @@ class CommentListAPIView(generics.ListCreateAPIView):
             text=serializer.validated_data['text']
         )
         
-        # Serializar la respuesta
         output_serializer = self.get_serializer(comment)
         return Response(output_serializer.data, status=201)
 
