@@ -302,7 +302,11 @@ class CommentListAPIView(generics.ListCreateAPIView):
         return Comment.objects.filter(
             post_id=post_id, 
             parent__isnull=True
-        ).select_related('author').prefetch_related('replies__author').order_by('created_at')
+        ).select_related('author').prefetch_related(
+            'replies__author',
+            'replies__replies_author',
+            'replies__replies__replies__author',
+            ).order_by('created_at')
 
     def create(self, request, *args, **kwargs):
         post_id = self.kwargs.get('post_id')
