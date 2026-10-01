@@ -115,8 +115,9 @@ class CommentSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'author', 'post', 'created_at', 'updated_at']
 
     def get_replies(self, obj):
-        # ✅ Recursión verdadera: serializa cada respuesta con su propio get_replies
-        replies = obj.replies.all().order_by('created_at')
+        # ✅ Obtener las respuestas directas de este comentario
+        replies = Comment.objects.filter(parent=obj).order_by('created_at')
+        # ✅ Serializar recursivamente
         return CommentSerializer(replies, many=True, context=self.context).data
 
 
