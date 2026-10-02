@@ -153,7 +153,7 @@ class PostListAPIView(generics.ListCreateAPIView):
     authentication_classes = [TokenAuthentication]
     pagination_class = PostPageNumberPagination
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ['title', 'text', 'content']
+    search_fields = ['title', 'text', 'content', 'category__name']
     ordering_fileds = ['created_at', 'title']
     ordering = ['-created_at']
 
@@ -162,14 +162,6 @@ class PostListAPIView(generics.ListCreateAPIView):
 
         # Filtrar por categoria si se proporciona el parametro
         category_slug = self.request.query_params.get('category')
-        """queryset = Post.objects.all().order_by('-id')
-        search_query = self.request.query_params.get('q', None)
-
-        if search_query:
-            queryset = queryset.filter(
-                Q(text__icontains=search_query) |
-                Q(author__username__icontains=search_query)
-            )"""
         if category_slug:
             queryset = queryset.filter(category__slug=category_slug)
         return queryset
