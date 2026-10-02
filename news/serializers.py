@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import Post, Comment, PostImage, Category, Like
+from .models import Post, Comment, PostImage, Category, Like, SiteConfig
 
 User = get_user_model()
 
@@ -144,3 +144,10 @@ class LikeSerializer(serializers.ModelSerializer):
     model = Like
     fields = ['id', 'post', 'user', 'created_at']
     read_only_fields = ['id', 'user', 'post', 'created_at']
+
+class SiteConfigSerializer(serializers.ModelSerializer):
+    logo = serializers.ImageFiel(max_length=None, use_url=True, allow_null=True, required=False)
+
+class Meta:
+    model = SiteConfig
+    fields = ['site_name', 'site_url', 'tagline', 'logo', 'primary_color'. 'allow_registration']

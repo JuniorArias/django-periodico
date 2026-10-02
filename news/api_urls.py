@@ -20,4 +20,6 @@ urlpatterns = [
     path('categories/<slug:slug>/posts/', views.CategoryPostsAPIView.as_view(), name='category_posts'),
         # Likes
     path('posts/<int:post_id>/like/', views.LikeToggleAPIView.as_view(), name='like_toggle'),
+        # Configuración del sitio
+    path('site-config/', views.SiteConfigAPIView.as_view(), name='site_config'),
 ]

@@ -14,11 +14,13 @@ from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from users.forms import CustomUserCreationForm
-from .models import Post, Comment, PostImage, Category, Like
+from .models import (
+    Post, Comment, PostImage, Category, Like, SiteConfig
+)
 from .permissions import IsAuthorOrEditor
 from .serializers import (
     PostSerializer, UserRegistrationSerializer, CurrentUserSerializer, CommentSerializer, 
-    CommentDetailSerializer, PostImageSerializer, CategorySerializer, LikeSerializer
+    CommentDetailSerializer, PostImageSerializer, CategorySerializer, LikeSerializer, SiteConfigSerializer
 )
 
 # ==========================================
@@ -499,3 +501,22 @@ class LikeToggleAPIView(APIView):
                 'like_count': post.likes.count(),
                 'message': 'Like agregado'
             })
+
+class SiteConfigAPIView(APIView):
+    """Devuelve la configuración global del sitio"""
+    permission_classes = [AllowAny] # Cualquiera puede ver la config
+
+    def get(self, request):
+        # Obtener la primera (y única) instancia de SiteConfig
+        config = SiteConfig.objects.first()
+
+        if not config:
+            # Si no extiste, crear una por defecto
+            config = SiteConfig.objects.create(
+                site_name='Periódico Digital',
+                site_url=request.build_absolute_uri('/')[:-1], # URL actual
+                tagline='Tu fuente de noticias'
+            )
+
+        serializer = SiteConfigSerializer(config)
+        return Response(serializer.data)

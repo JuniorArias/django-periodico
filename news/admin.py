@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Post, Comment, PostImage, Category, Like
+from .models import Post, Comment, PostImage, Category, Like, SiteConfig
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
@@ -32,3 +32,18 @@ class PostImageAdmin(admin.ModelAdmin):
 class LikeAdmin(admin.ModelAdmin):
     list_display = ['user', 'post', 'created_at']
     list_filter = ['created_at']
+
+@admin.register(SiteConfig)
+class SiteConfigAdmin(admin,ModelAdmin):
+    list_display = ['site_name', 'site_url', 'primary_color', 'allow_registration', 'updated_at']
+    fieldsets = (
+        ('Información General', {
+            'fields': ('site_name', 'site_url', 'tagline', 'logo')
+        }),
+        ('Apariencia', {
+            'fields': ('primary_color',)
+        }),
+        ('Permisos', {
+            'fields': ('allow_registration',)
+        }),
+    )

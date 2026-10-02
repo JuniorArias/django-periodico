@@ -112,3 +112,29 @@ class Like(models.Model):
 
     def __str__(self):
         return f"{self.user.username} liked '{self.post.title[:30]}'"
+
+class SiteConfig(models.Model):
+    """Configuración global del sitio (singleton)"""
+    site_name = models.CharField(max_length=100, default='Periódico Digital')
+    site_url = models.URLField(help_text='URL pública del sitio (ej: https://miperiodico.com)')
+    tagline = models.CharField(max_length=200, blank=True, default='Tu fuente de noticias')
+    logo = models.ImageField(upload_to='config/', blank=True, null=True)
+    primary_color = models.CharField(max_length=7, default='#607D8B', help_text='Color hexadecimal (ej: #607D8B)')
+    allow_registration = models.BooleanField(default=True, help_text='Permitir registro de nuevos usuarios')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Configuración del Sitio'
+        verbose_name_plural = 'Configuración del Sitio'
+
+    def __str__(self):
+        return f"Configuración: {self.site_name}"
+
+    def save(self, *args, **kwargs):
+        # Asegurar que solo exista una instancia (singleton)
+        if not self.pk and SiteConfig.objects.exists():
+            # Si ya existe, actualizar la primera instancia
+            existing = SiteConfig.objects.first()
+            self.pk = existing.pk
+        super().save(*args, **kwargs)
