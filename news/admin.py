@@ -34,7 +34,7 @@ class LikeAdmin(admin.ModelAdmin):
     list_filter = ['created_at']
 
 @admin.register(SiteConfig)
-class SiteConfigAdmin(admin,ModelAdmin):
+class SiteConfigAdmin(admin.ModelAdmin):
     list_display = ['site_name', 'site_url', 'primary_color', 'allow_registration', 'updated_at']
     fieldsets = (
         ('Información General', {
