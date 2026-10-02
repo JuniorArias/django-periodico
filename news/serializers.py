@@ -146,8 +146,8 @@ class LikeSerializer(serializers.ModelSerializer):
     read_only_fields = ['id', 'user', 'post', 'created_at']
 
 class SiteConfigSerializer(serializers.ModelSerializer):
-    logo = serializers.ImageFiel(max_length=None, use_url=True, allow_null=True, required=False)
+    logo = serializers.ImageField(max_length=None, use_url=True, allow_null=True, required=False)
 
 class Meta:
     model = SiteConfig
-    fields = ['site_name', 'site_url', 'tagline', 'logo', 'primary_color'. 'allow_registration']
+    fields = ['site_name', 'site_url', 'tagline', 'logo', 'primary_color', 'allow_registration']
