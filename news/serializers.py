@@ -94,10 +94,11 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
 class CurrentUserSerializer(serializers.ModelSerializer):
     can_write = serializers.SerializerMethodField()
+    is_admin = serializers.BooleanField(source='is_superuser', read_only=True)
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'can_write']
+        fields = ['id', 'username', 'email', 'can_write', 'is_admin']
 
     def get_can_write(self, obj):
         return obj.has_perm('news.add_post') or obj.has_perm('news.change_post')
