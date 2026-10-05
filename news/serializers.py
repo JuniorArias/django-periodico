@@ -158,12 +158,25 @@ class SiteConfigSerializer(serializers.ModelSerializer):
 class NotificationSerializer(serializers.ModelSerializer):
     sender_username = serializers.ReadOnlyField(source='sender.username')
     post_title = serializers.ReadOnlyField(source='post.title')
+    comment_id = serializers.SerializersMethodField()
 
     class Meta:
         model = Notification
         fields = [
             'id', 'recipient', 'sender', 'sender_username', 
             'post', 'post_title', 'notification_type', 
-            'message', 'is_read', 'created_at'
+            'message', 'is_read', 'created_at', 'comment_id'
         ]
         read_only_fields = ['id', 'recipient', 'sender', 'created_at']
+
+        def get_comment_id(self, obj):
+            if obj.notification_type in ['reply', 'comment']:
+                comment = Comment.objects.filter(
+                    post=obj.post,
+                    author=obj.sender,
+                    created_at__lte=obj.created_at
+                ).order_by('-created_at').first()
+            
+                if comment:
+                    return comment.id
+            return None
