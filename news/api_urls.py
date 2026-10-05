@@ -22,4 +22,9 @@ urlpatterns = [
     path('posts/<int:post_id>/like/', views.LikeToggleAPIView.as_view(), name='like_toggle'),
         # Configuración del sitio
     path('site-config/', views.SiteConfigAPIView.as_view(), name='site_config'),
+        # Notificaciones
+    path('notifications/', views.NotificationListAPIView.as_view(), name='notification_list'),
+    path('notifications/<int:notification_id>/read/', views.NotificationMarkAsReadAPIView.as_view(), name='notification_mark_read'),
+    path('notifications/mark-all-read/', views.NotificationMarkAllAsReadAPIView.as_view(), name='notification_mark_all_read'),
+    path('notifications/unread-count/', views.UnreadNotificationCountAPIView.as_view(), name='notification_unread_count'),
 ]

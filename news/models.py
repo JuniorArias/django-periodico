@@ -138,3 +138,45 @@ class SiteConfig(models.Model):
             existing = SiteConfig.objects.first()
             self.pk = existing.pk
         super().save(*args, **kwargs)
+
+class Notification(models.Model):
+    """Notificaciones in-app para usuarios"""
+    NOTIFICATION_TYPES = [
+        ('comment', 'Nuevo comentario'),
+        ('reply', 'Nueva respuesta'),
+        ('like', 'Nuevo like'),
+    ]
+    
+    recipient = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.CASCADE,
+        related_name='notifications',
+        help_text='Usuario que recibe la notificación'
+    )
+    sender = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='sent_notifications',
+        help_text='Usuario que generó la notificación'
+    )
+    post = models.ForeignKey(
+        Post, 
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        help_text='Artículo relacionado (opcional)'
+    )
+    notification_type = models.CharField(
+        max_length=20, 
+        choices=NOTIFICATION_TYPES,
+        help_text='Tipo de notificación'
+    )
+    message = models.TextField(help_text='Mensaje de la notificación')
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.notification_type} para {self.recipient.username}"

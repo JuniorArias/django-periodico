@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import Post, Comment, PostImage, Category, Like, SiteConfig
+from .models import (
+    Post, Comment, PostImage, Category, Like, SiteConfig, Notification
+)
 
 User = get_user_model()
 
@@ -151,3 +153,17 @@ class SiteConfigSerializer(serializers.ModelSerializer):
     class Meta:
         model = SiteConfig
         fields = ['site_name', 'site_url', 'tagline', 'logo', 'primary_color', 'allow_registration']
+
+
+class NotificationSerializer(serializers.ModelSerializer):
+    sender_username = serializers.ReadOnlyField(source='sender.username')
+    post_title = serializers.ReadOnlyField(source='post.title')
+
+    class Meta:
+        model = Notification
+        fields = [
+            'id', 'recipient', 'sender', 'sender_username', 
+            'post', 'post_title', 'notification_type', 
+            'message', 'is_read', 'created_at'
+        ]
+        read_only_fields = ['id', 'recipient', 'sender', 'created_at']

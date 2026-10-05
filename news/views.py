@@ -15,12 +15,13 @@ from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from users.forms import CustomUserCreationForm
 from .models import (
-    Post, Comment, PostImage, Category, Like, SiteConfig
+    Post, Comment, PostImage, Category, Like, SiteConfig, Notification
 )
 from .permissions import IsAuthorOrEditor
 from .serializers import (
     PostSerializer, UserRegistrationSerializer, CurrentUserSerializer, CommentSerializer, 
-    CommentDetailSerializer, PostImageSerializer, CategorySerializer, LikeSerializer, SiteConfigSerializer
+    CommentDetailSerializer, PostImageSerializer, CategorySerializer, LikeSerializer, SiteConfigSerializer,
+    NotificationSerializer
 )
 
 # ==========================================
@@ -496,6 +497,17 @@ class LikeToggleAPIView(APIView):
         else:
             # No ha dado like → dar like
             Like.objects.create(post=post, user=request.user)
+
+            # ✅ CREAR NOTIFICACIÓN
+            if post.author != request.user:  # No notificar si es el mismo usuario
+                Notification.objects.create(
+                    recipient=post.author,
+                    sender=request.user,
+                    post=post,
+                    notification_type='like',
+                    message=f'{request.user.username} dio like a tu artículo "{post.title}"'
+                )
+                
             return Response({
                 'liked': True,
                 'like_count': post.likes.count(),
@@ -520,3 +532,162 @@ class SiteConfigAPIView(APIView):
 
         serializer = SiteConfigSerializer(config)
         return Response(serializer.data)
+
+
+class NotificationListAPIView(generics.ListAPIView):
+    """Lista todas las notificaciones del usuario autenticado"""
+    serializer_class = NotificationSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
+
+    def get_queryset(self):
+        return Notification.objects.filter(recipient=self.request.user)
+
+
+class NotificationMarkAsReadAPIView(APIView):
+    """Marca una notificación como leída"""
+    permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
+
+    def post(self, request, notification_id):
+        try:
+            notification = Notification.objects.get(
+                id=notification_id, 
+                recipient=request.user
+            )
+            notification.is_read = True
+            notification.save()
+            return Response({'success': True, 'message': 'Notificación marcada como leída'})
+        except Notification.DoesNotExist:
+            return Response({'error': 'Notificación no encontrada'}, status=404)
+
+
+class NotificationMarkAllAsReadAPIView(APIView):
+    """Marca todas las notificaciones como leídas"""
+    permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
+
+    def post(self, request):
+        Notification.objects.filter(
+            recipient=request.user, 
+            is_read=False
+        ).update(is_read=True)
+        return Response({'success': True, 'message': 'Todas las notificaciones marcadas como leídas'})
+
+
+class UnreadNotificationCountAPIView(APIView):
+    """Devuelve el conteo de notificaciones no leídas"""
+    permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
+
+    def get(self, request):
+        count = Notification.objects.filter(
+            recipient=request.user, 
+            is_read=False
+        ).count()
+        return Response({'unread_count': count})
+
+
+class NotificationListAPIView(generics.ListAPIView):
+    """Lista todas las notificaciones del usuario autenticado"""
+    serializer_class = NotificationSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
+
+    def get_queryset(self):
+        return Notification.objects.filter(recipient=self.request.user)
+
+
+class NotificationMarkAsReadAPIView(APIView):
+    """Marca una notificación como leída"""
+    permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
+
+    def post(self, request, notification_id):
+        try:
+            notification = Notification.objects.get(
+                id=notification_id, 
+                recipient=request.user
+            )
+            notification.is_read = True
+            notification.save()
+            return Response({'success': True, 'message': 'Notificación marcada como leída'})
+        except Notification.DoesNotExist:
+            return Response({'error': 'Notificación no encontrada'}, status=404)
+
+
+class NotificationMarkAllAsReadAPIView(APIView):
+    """Marca todas las notificaciones como leídas"""
+    permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
+
+    def post(self, request):
+        Notification.objects.filter(
+            recipient=request.user, 
+            is_read=False
+        ).update(is_read=True)
+        return Response({'success': True, 'message': 'Todas las notificaciones marcadas como leídas'})
+
+
+class UnreadNotificationCountAPIView(APIView):
+    """Devuelve el conteo de notificaciones no leídas"""
+    permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
+
+    def get(self, request):
+        count = Notification.objects.filter(
+            recipient=request.user, 
+            is_read=False
+        ).count()
+        return Response({'unread_count': count})
+
+    def create(self, request, *args, **kwargs):
+        post_id = self.kwargs.get('post_id')
+        
+        try:
+            post = Post.objects.get(id=post_id)
+        except Post.DoesNotExist:
+            raise NotFound("El artículo no existe")
+        
+        if not post.allow_comments:
+            raise PermissionDenied("Los comentarios están deshabilitados")
+        
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        parent = serializer.validated_data.get('parent')
+        
+        if parent and parent.post_id != post.id:
+            raise ValidationError("El comentario padre no pertenece a este artículo")
+        
+        comment = Comment.objects.create(
+            post=post,
+            author=request.user,
+            parent=parent,
+            text=serializer.validated_data['text']
+        )
+        
+        # ✅ CREAR NOTIFICACIÓN
+        if parent:
+            # Es una respuesta: notificar al autor del comentario padre
+            if parent.author != request.user:  # No notificar si es el mismo usuario
+                Notification.objects.create(
+                    recipient=parent.author,
+                    sender=request.user,
+                    post=post,
+                    notification_type='reply',
+                    message=f'{request.user.username} respondió a tu comentario en "{post.title}"'
+                )
+        else:
+            # Es un comentario principal: notificar al autor del post
+            if post.author != request.user:  # No notificar si es el mismo usuario
+                Notification.objects.create(
+                    recipient=post.author,
+                    sender=request.user,
+                    post=post,
+                    notification_type='comment',
+                    message=f'{request.user.username} comentó en tu artículo "{post.title}"'
+                )
+        
+        output_serializer = self.get_serializer(comment)
+        return Response(output_serializer.data, status=201)
