@@ -169,14 +169,20 @@ class NotificationSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['id', 'recipient', 'sender', 'created_at']
 
-        def get_comment_id(self, obj):
-            if obj.notification_type in ['reply', 'comment']:
+    def get_comment_id(self, obj):
+        try:
+            # Solo buscamos comentario si es de tipo 'reply' o 'comment' y hay un post
+            if obj.notification_type in ['reply', 'comment'] and obj.post:
+                # Buscamos el comentario más reciente de este autor en este post
                 comment = Comment.objects.filter(
                     post=obj.post,
-                    author=obj.sender,
-                    created_at__lte=obj.created_at
+                    author=obj.sender
                 ).order_by('-created_at').first()
-            
+                
                 if comment:
                     return comment.id
-            return None
+        except Exception as e:
+            # Si algo falla, lo registramos pero no rompemos toda la API
+            print(f"⚠️ Error obteniendo comment_id para notificación {obj.id}: {e}")
+            
+        return None
