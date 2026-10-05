@@ -308,11 +308,6 @@ class CommentListAPIView(generics.ListCreateAPIView):
     def create(self, request, *args, **kwargs):
         post_id = self.kwargs.get('post_id')
         
-        print(f"\n{'='*60}")
-        print(f"🚀 CREANDO COMENTARIO EN POST {post_id}")
-        print(f"📦 Datos recibidos: {request.data}")
-        print(f"{'='*60}")
-        
         try:
             post = Post.objects.get(id=post_id)
         except Post.DoesNotExist:
@@ -324,15 +319,10 @@ class CommentListAPIView(generics.ListCreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         
-        print(f"✅ Datos validados: {serializer.validated_data}")
-        
         parent = serializer.validated_data.get('parent')
         
-        print(f"🔗 Parent extraído: {parent}")
-        if parent:
-            print(f"   - Parent ID: {parent.id}")
-            print(f"   - Parent text: {parent.text}")
-            print(f"   - Parent's parent: {parent.parent}")
+        if parent and parent.post_id != post.id:
+            raise ValidationError("El comentario padre no pertenece a este artículo")
         
         comment = Comment.objects.create(
             post=post,
@@ -341,11 +331,29 @@ class CommentListAPIView(generics.ListCreateAPIView):
             text=serializer.validated_data['text']
         )
         
-        print(f"💾 Comentario creado:")
-        print(f"   - ID: {comment.id}")
-        print(f"   - Text: {comment.text}")
-        print(f"   - Parent ID: {comment.parent.id if comment.parent else None}")
-        print(f"{'='*60}\n")
+        # ✅ CREAR NOTIFICACIÓN AUTOMÁTICA
+        if parent:
+            # Es una respuesta: notificar al autor del comentario padre
+            if parent.author != request.user:
+                print(f"✅ Creando notificación de respuesta para {parent.author.username}")
+                Notification.objects.create(
+                    recipient=parent.author,
+                    sender=request.user,
+                    post=post,
+                    notification_type='reply',
+                    message=f'{request.user.username} respondió a tu comentario en "{post.title}"'
+                )
+        else:
+            # Es un comentario principal: notificar al autor del post
+            if post.author != request.user:
+                print(f"✅ Creando notificación de comentario para {post.author.username}")
+                Notification.objects.create(
+                    recipient=post.author,
+                    sender=request.user,
+                    post=post,
+                    notification_type='comment',
+                    message=f'{request.user.username} comentó en tu artículo "{post.title}"'
+                )
         
         output_serializer = self.get_serializer(comment)
         return Response(output_serializer.data, status=201)
