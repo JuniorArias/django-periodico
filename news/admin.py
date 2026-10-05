@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Post, Comment, PostImage, Category, Like, SiteConfig
+from .models import Post, Comment, PostImage, Category, Like, SiteConfig, Notification
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
@@ -47,3 +47,11 @@ class SiteConfigAdmin(admin.ModelAdmin):
             'fields': ('allow_registration',)
         }),
     )
+
+
+@admin.register(Notification)
+class NotificationAdmin(admin.ModelAdmin):
+    list_display = ['recipient', 'sender', 'notification_type', 'post', 'is_read', 'created_at']
+    list_filter = ['notification_type', 'is_read', 'created_at']
+    search_fields = ['recipient__username', 'sender__username', 'message']
+    readonly_fields = ['created_at']
