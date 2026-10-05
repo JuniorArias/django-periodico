@@ -158,7 +158,7 @@ class SiteConfigSerializer(serializers.ModelSerializer):
 class NotificationSerializer(serializers.ModelSerializer):
     sender_username = serializers.ReadOnlyField(source='sender.username')
     post_title = serializers.ReadOnlyField(source='post.title')
-    comment_id = serializers.SerializersMethodField()
+    comment_id = serializers.SerializerMethodField()
 
     class Meta:
         model = Notification
