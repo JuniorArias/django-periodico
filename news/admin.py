@@ -3,8 +3,8 @@ from .models import Post, Comment, PostImage, Category, Like, SiteConfig, Notifi
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ['name', 'slug', 'created_at']
-    search_fields = ['name']
+    list_display = ['name', 'name_en', 'slug', 'created_at']
+    search_fields = ['name', 'name_en', 'slug']
     prepopulated_fields = {'slug': ('name',)}
 
 class PostImageInline(admin.TabularInline):

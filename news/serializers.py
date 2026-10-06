@@ -9,10 +9,11 @@ User = get_user_model()
 
 class CategorySerializer(serializers.ModelSerializer):
     post_count = serializers.SerializerMethodField()
+    name_en = serializers.CharFiel(requided=False, allow_null=True)
 
     class Meta:
         model = Category
-        fields = ['id', 'name', 'slug', 'description', 'post_count']
+        fields = ['id', 'name', 'name_en', 'slug', 'description', 'post_count']
 
     def get_post_count(self, obj):
         return obj.posts.count()

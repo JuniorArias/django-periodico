@@ -6,6 +6,7 @@ from django.urls import reverse
 # 1. PRIMERO: Modelo Category
 class Category(models.Model):
     name = models.CharField(max_length=100, unique=True)
+    name_en = models.CharField(max_length=100, blank=True, null=True)
     slug = models.SlugField(max_length=100, unique=True, blank=True)
     description = models.TextField(blank=True, help_text="Descripción opcional de la categoría")
     created_at = models.DateTimeField(auto_now_add=True)
