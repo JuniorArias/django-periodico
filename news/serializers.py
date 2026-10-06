@@ -53,7 +53,7 @@ class PostSerializer(serializers.ModelSerializer):
         required=False,
         allow_null=True
     )
-    translations = PostTranslationSerializer(many=True, read_only=True;)
+    translations = PostTranslationSerializer(many=True, read_only=True)
 
     class Meta:
         model = Post
