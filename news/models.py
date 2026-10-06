@@ -165,9 +165,7 @@ class SiteConfig(models.Model):
     logo = models.ImageField(upload_to='config/', blank=True, null=True)
     primary_color = models.CharField(max_length=7, default='#607D8B', help_text='Color hexadecimal (ej: #607D8B)')
     allow_registration = models.BooleanField(default=True, help_text='Permitir registro de nuevos usuarios')
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
+    
     enable_multilanguage = models.BooleanField(
         default=False,
         help_text='Activar soporte multi-idioma en la aplicación'
@@ -177,6 +175,9 @@ class SiteConfig(models.Model):
         default='es',
         help_text='Idioma por defecto (ej: es, en, fr)'
     )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     class Meta:
         verbose_name = 'Configuración del Sitio'
         verbose_name_plural = 'Configuración del Sitio'
