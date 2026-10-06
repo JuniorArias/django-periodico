@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from .models import (
-    Post, Comment, PostImage, Category, CategoryTranslation, Like, SiteConfig, Notification
+    Post, Comment, PostImage, Category, CategoryTranslation, Like, SiteConfig, Notification, PostTranslation
 )
 
 User = get_user_model()
@@ -33,6 +33,11 @@ class PostImageSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'created_at']
 
 
+class PostTranslationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PostTranslation
+        fields = ['language_code', 'title', 'text', 'content']
+
 class PostSerializer(serializers.ModelSerializer):
     author = serializers.ReadOnlyField(source='author.username')
     image = serializers.ImageField(max_length=None, use_url=True, allow_null=True, required=False)
@@ -48,6 +53,7 @@ class PostSerializer(serializers.ModelSerializer):
         required=False,
         allow_null=True
     )
+    translations = PostTranslationSerializer(many=True, read_only=True;)
 
     class Meta:
         model = Post

@@ -117,6 +117,29 @@ class PostImage(models.Model):
         title = self.post.title[:30] if self.post.title else "Sin título"
         return f"Imagen de {title}"
 
+class PostTranslation(models.Model):
+    """Traducciones de artículos (título, resumen y contenido)"""
+    post = models.ForeignKey(
+        Post, 
+        on_delete=models.CASCADE, 
+        related_name='translations'
+    )
+    language_code = models.CharField(
+        max_length=10, 
+        help_text="Código del idioma (ej: 'es', 'en', 'fr', 'pt')"
+    )
+    title = models.CharField(max_length=200, help_text="Título traducido")
+    text = models.TextField(help_text="Resumen corto traducido", blank=True)
+    content = models.TextField(help_text="Contenido completo traducido", blank=True)
+    
+    class Meta:
+        unique_together = ['post', 'language_code']
+        verbose_name = "Traducción de Artículo"
+        verbose_name_plural = "Traducciones de Artículos"
+    
+    def __str__(self):
+        return f"{self.post.title} ({self.language_code})"
+
 class Like(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='likes')
     user = models.ForeignKey(

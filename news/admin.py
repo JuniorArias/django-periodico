@@ -1,11 +1,18 @@
 from django.contrib import admin
-from .models import Post, Comment, PostImage, Category, CategoryTranslation, Like, SiteConfig, Notification
+from .models import Post, Comment, PostImage, Category, CategoryTranslation, Like, SiteConfig, Notification, PostTranslation
 
 class CategoryTranslationInline(admin.TabularInline):
     model = CategoryTranslation
     extra = 1
     verbose_name = "Traducción"
     verbose_name_plural = "Traducciones de esta categoría"
+
+class PostTranslationInline(admin.TabularInline):
+    """Permite editar traducciones de titulo y contenido desde el admin del post"""
+    model = PostTranslation
+    extra = 1
+    verbose_name = "Traducción del Artículo"
+    verbose_name_plural = "Traducciones de este Artículo"
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
@@ -23,7 +30,7 @@ class PostAdmin(admin.ModelAdmin):
     list_display = ['title', 'author', 'category', 'created_at', 'allow_comments']
     list_filter = ['created_at', 'allow_comments', 'author', 'category']
     search_fields = ['title', 'text', 'content']
-    inlines = [PostImageInline]  # Permite agregar imágenes desde el admin
+    inlines = [PostImageInline, PostTranslationInline]  # Permite agregar imágenes desde el admin
 
 @admin.register(Comment)
 class CommentAdmin(admin.ModelAdmin):
