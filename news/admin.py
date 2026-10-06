@@ -42,7 +42,7 @@ class LikeAdmin(admin.ModelAdmin):
 
 @admin.register(SiteConfig)
 class SiteConfigAdmin(admin.ModelAdmin):
-    list_display = ['site_name', 'site_url', 'primary_color', 'allow_registration', 'updated_at']
+    list_display = ['site_name', 'site_url', 'primary_color', 'allow_registration', 'enable_multilanguage', 'default_language', 'updated_at']
     fieldsets = (
         ('Información General', {
             'fields': ('site_name', 'site_url', 'tagline', 'logo')
@@ -52,6 +52,10 @@ class SiteConfigAdmin(admin.ModelAdmin):
         }),
         ('Permisos', {
             'fields': ('allow_registration',)
+        }),
+        ('Multi-Idioma', {
+            'fields': ('enable_multilanguage', 'default_language'),
+            'description': 'Controla el soporte de idiomas en la aplicación'
         }),
     )
 

@@ -161,7 +161,16 @@ class SiteConfigSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SiteConfig
-        fields = ['site_name', 'site_url', 'tagline', 'logo', 'primary_color', 'allow_registration']
+        fields = [
+            'site_name', 
+            'site_url', 
+            'tagline', 
+            'logo', 
+            'primary_color', 
+            'allow_registration',
+            'enable_multilanguage',
+            'default_language'
+        ]
 
 
 class NotificationSerializer(serializers.ModelSerializer):
