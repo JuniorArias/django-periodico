@@ -16,7 +16,7 @@ class CategoryTranslationSerializer(serializers.ModelSerializer):
 class CategorySerializer(serializers.ModelSerializer):
     """Serializer principal de categorías con traducciones anidadas"""
     post_count = serializers.SerializerMethodField()
-    translations = CategoryTranslationSerializer(many=True, read_only=True)
+    translations = serializers.SerializerMethodField()
 
     class Meta:
         model = Category
@@ -25,6 +25,12 @@ class CategorySerializer(serializers.ModelSerializer):
     def get_post_count(self, obj):
         return obj.posts.count()
 
+    def get_translations(self, obj):
+        try:
+            return CategoryTranslationSerializer(obj.translations.all(), many=True).data
+        except Exception as e:
+            print(f"⚠️ Error en traducciones de categoría {obj.id}: {e}")
+            return []
 
 class PostImageSerializer(serializers.ModelSerializer):
     class Meta:
@@ -53,16 +59,23 @@ class PostSerializer(serializers.ModelSerializer):
         required=False,
         allow_null=True
     )
-    translations = PostTranslationSerializer(many=True, read_only=True)
+    translations = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
         fields = [
             'id', 'author', 'title', 'text', 'content', 'image',
             'category', 'category_id', 'images', 'created_at', 'updated_at',
-            'comment_count', 'allow_comments', 'like_count', 'is_liked'
+            'comment_count', 'allow_comments', 'like_count', 'is_liked', 'translations'
         ]
         read_only_fields = ['id', 'author', 'created_at', 'updated_at']
+
+    def get_translations(self, obj):
+        try:
+            return PostTranslationSerializer(obj.translations.all(), many=True).data
+        except Exception as e:
+            print(f"⚠️ Error en traducciones del post {obj.id}: {e}")
+            return []
 
     def get_comment_count(self, obj):
         try:
@@ -158,9 +171,11 @@ class CommentReplySerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'author', 'created_at', 'updated_at']
 
 class LikeSerializer(serializers.ModelSerializer):
-    model = Like
-    fields = ['id', 'post', 'user', 'created_at']
-    read_only_fields = ['id', 'user', 'post', 'created_at']
+    class Meta:
+        model = Like
+        fields = ['id', 'post', 'user', 'created_at']
+        read_only_fields = ['id', 'user', 'post', 'created_at']
+
 
 class SiteConfigSerializer(serializers.ModelSerializer):
     logo = serializers.ImageField(max_length=None, use_url=True, allow_null=True, required=False)
