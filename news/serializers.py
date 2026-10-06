@@ -1,19 +1,26 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from .models import (
-    Post, Comment, PostImage, Category, Like, SiteConfig, Notification
+    Post, Comment, PostImage, Category, CategoryTranslation, Like, SiteConfig, Notification
 )
 
 User = get_user_model()
 
 
+class CategoryTranslationSerializer(serializers.ModelSerializer):
+    """Serializer para las traducciones de categorías"""
+    class Meta:
+        model = CategoryTranslation
+        fields = ['language_code', 'name']
+
 class CategorySerializer(serializers.ModelSerializer):
+    """Serializer principal de categorías con traducciones anidadas"""
     post_count = serializers.SerializerMethodField()
-    name_en = serializers.CharFiel(requided=False, allow_null=True)
+    translations = CategoryTranslationSerializer(many=True, read_only=True)
 
     class Meta:
         model = Category
-        fields = ['id', 'name', 'name_en', 'slug', 'description', 'post_count']
+        fields = ['id', 'name', 'slug', 'description', 'post_count', 'translations']
 
     def get_post_count(self, obj):
         return obj.posts.count()

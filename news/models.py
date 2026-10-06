@@ -6,7 +6,6 @@ from django.urls import reverse
 # 1. PRIMERO: Modelo Category
 class Category(models.Model):
     name = models.CharField(max_length=100, unique=True)
-    name_en = models.CharField(max_length=100, blank=True, null=True)
     slug = models.SlugField(max_length=100, unique=True, blank=True)
     description = models.TextField(blank=True, help_text="Descripción opcional de la categoría")
     created_at = models.DateTimeField(auto_now_add=True)
@@ -23,6 +22,27 @@ class Category(models.Model):
             from django.utils.text import slugify
             self.slug = slugify(self.name)
         super().save(*args, **kwargs)
+
+class CategoryTranslation(modles.Model):
+    """Permite infinitos idiomas para las categorías sin tocar el código"""
+    category = models.ForeignKey(
+        Category, 
+        on_delete=models.CASCADE, 
+        related_name='translations'
+    )
+    language_code = models.CharField(
+        max_length=10, 
+        help_text="Código del idioma (ej: 'es', 'en', 'fr', 'pt')"
+    )
+    name = models.CharField(max_length=100)
+    
+    class Meta:
+        unique_together = ['category', 'language_code']
+        verbose_name = "Traducción de Categoría"
+        verbose_name_plural = "Traducciones de Categorías"
+    
+    def __str__(self):
+        return f"{self.category.name} ({self.language_code}): {self.name}"
 
 
 # 2. SEGUNDO: Modelo Post
