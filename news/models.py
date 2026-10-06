@@ -23,7 +23,7 @@ class Category(models.Model):
             self.slug = slugify(self.name)
         super().save(*args, **kwargs)
 
-class CategoryTranslation(modles.Model):
+class CategoryTranslation(models.Model):
     """Permite infinitos idiomas para las categorías sin tocar el código"""
     category = models.ForeignKey(
         Category, 

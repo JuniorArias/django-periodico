@@ -1,11 +1,18 @@
 from django.contrib import admin
-from .models import Post, Comment, PostImage, Category, Like, SiteConfig, Notification
+from .models import Post, Comment, PostImage, Category, CategoryTranslation, Like, SiteConfig, Notification
+
+class CategoryTranslationInline(admin.TabularInline):
+    model = CategoryTranslation
+    extra = 1
+    verbose_name = "Traducción"
+    verbose_name_plural = "Traducciones de esta categoría"
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ['name', 'name_en', 'slug', 'created_at']
-    search_fields = ['name', 'name_en', 'slug']
+    list_display = ['name', 'slug', 'created_at']
+    search_fields = ['name', 'slug']
     prepopulated_fields = {'slug': ('name',)}
+    inlines = [CategoryTranslationInline]
 
 class PostImageInline(admin.TabularInline):
     model = PostImage
