@@ -176,6 +176,18 @@ class SiteConfig(models.Model):
         help_text='Idioma por defecto (ej: es, en, fr)'
     )
 
+    THEME_CHOICES = [
+        ('light', 'Claro'),
+        ('dark', 'Oscuro'),
+        ('system', 'Según sistema'),
+    ]
+    default_theme = models.CharField(
+        max_length=10,
+        choices=THEME_CHOICES,
+        default='light',
+        help_text='Tema por defecto de la aplicación'
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     class Meta:
