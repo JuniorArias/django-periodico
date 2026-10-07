@@ -55,7 +55,7 @@ class SiteConfigAdmin(admin.ModelAdmin):
             'fields': ('site_name', 'site_url', 'tagline', 'logo')
         }),
         ('Apariencia', {
-            'fields': ('primary_color',)
+            'fields': ('primary_color', 'default_theme')
         }),
         ('Permisos', {
             'fields': ('allow_registration',)

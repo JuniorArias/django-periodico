@@ -190,7 +190,8 @@ class SiteConfigSerializer(serializers.ModelSerializer):
             'primary_color', 
             'allow_registration',
             'enable_multilanguage',
-            'default_language'
+            'default_language',
+            'default_theme'
         ]
 
 
