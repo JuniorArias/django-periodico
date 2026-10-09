@@ -1,0 +1,132 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block title %}{{ site_name }} | {% trans 'Django site admin' %}{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    /* ✅ Variables CSS con tu color primario dinámico */
+    :root {
+        --primary-color: {{ primary_color }};
+        --primary-color-light: {{ primary_color }}33; /* 20% opacidad */
+        --primary-color-dark: {{ primary_color }}CC; /* 80% opacidad */
+    }
+
+    /* Header del admin */
+    #header {
+        background: var(--primary-color) !important;
+        color: white !important;
+    }
+
+    #header a:link, #header a:visited {
+        color: white !important;
+    }
+
+    #header a:hover {
+        color: rgba(255, 255, 255, 0.8) !important;
+    }
+
+    /* Branding */
+    div.breadcrumbs {
+        background: var(--primary-color-dark) !important;
+    }
+
+    div.breadcrumbs a {
+        color: white !important;
+    }
+
+    /* Botones de acción */
+    .button, 
+    input[type=submit], 
+    input[type=button], 
+    .submit-row input, 
+    a.button {
+        background: var(--primary-color) !important;
+    }
+
+    .button:hover, 
+    input[type=submit]:hover, 
+    input[type=button]:hover {
+        background: var(--primary-color-dark) !important;
+    }
+
+    /* Enlaces */
+    a:link, a:visited {
+        color: var(--primary-color) !important;
+    }
+
+    a:hover {
+        color: var(--primary-color-dark) !important;
+    }
+
+    /* Tablas */
+    thead th {
+        background: var(--primary-color-light) !important;
+    }
+
+    /* Formularios */
+    .form-row:focus-within,
+    .form-row:hover {
+        background: var(--primary-color-light) !important;
+    }
+
+    /* Selector de archivos */
+    .file-upload .clearable-file-input input[type="checkbox"] {
+        accent-color: var(--primary-color);
+    }
+
+    /* Checkbox y radio buttons */
+    input[type="checkbox"]:checked,
+    input[type="radio"]:checked {
+        accent-color: var(--primary-color);
+    }
+
+    /* Mensajes de éxito */
+    .messagelist .success {
+        background: var(--primary-color-light) !important;
+        border-left: 4px solid var(--primary-color) !important;
+    }
+
+    /* Modo oscuro (si el usuario lo tiene activado en el navegador) */
+    @media (prefers-color-scheme: dark) {
+        body {
+            background: #1a1a1a !important;
+            color: #e0e0e0 !important;
+        }
+
+        #container {
+            background: #242424 !important;
+        }
+
+        #content {
+            background: #2a2a2a !important;
+        }
+
+        .module {
+            background: #2a2a2a !important;
+            border: 1px solid #404040 !important;
+        }
+
+        input[type=text], 
+        input[type=password], 
+        input[type=email], 
+        input[type=url], 
+        input[type=number], 
+        textarea, 
+        select {
+            background: #1a1a1a !important;
+            color: #e0e0e0 !important;
+            border: 1px solid #404040 !important;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block branding %}
+<h1 id="site-name">
+    <a href="{% url 'admin:index' %}">
+        {{ site_name }} {% trans 'administration' %}
+    </a>
+</h1>
+{% endblock %}
