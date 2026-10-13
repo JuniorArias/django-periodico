@@ -139,22 +139,22 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-# ✅ Configuración de TinyMCE
 TINYMCE_DEFAULT_CONFIG = {
     'height': 500,
     'width': '100%',
     'theme': 'silver',
-    'plugins': '''
-        advlist autolink lists link image charmap print preview anchor
-        searchreplace visualblocks code fullscreen
-        insertdatetime media table paste code help wordcount
-    ''',
-    'toolbar': '''
-        undo redo | formatselect | bold italic underline strikethrough |
-        alignleft aligncenter alignright alignjustify |
-        bullist numlist outdent indent | link image media |
-        removeformat code | help
-    ''',
+    'menubar': True,
+    'plugins': [
+        'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+        'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+        'insertdatetime', 'media', 'table', 'help', 'wordcount'
+    ],
+    'toolbar': [
+        'undo redo | blocks | bold italic underline strikethrough |',
+        'alignleft aligncenter alignright alignjustify |',
+        'bullist numlist outdent indent | link image media table |',
+        'removeformat code | help'
+    ],
     'content_css': '/static/css/tinymce.css',
     'image_advtab': True,
     'file_picker_types': 'image',
@@ -162,16 +162,12 @@ TINYMCE_DEFAULT_CONFIG = {
     'images_upload_url': '/tinymce/upload/',
     'relative_urls': False,
     'remove_script_host': False,
-    # ✅ Configuración mejorada para videos
-    'media_alt_source': False,
-    'media_poster': False,
-    'media_dimensions': False,
-    'media_embed_handling': True,
     
-    # ✅ Permitir iframes para videos embebidos
-    'extended_valid_elements': 'iframe[src|width|height|name|align|class|frameborder|allowfullscreen]',
+    # Permitir iframes para videos embebidos
+    'extended_valid_elements': 'iframe[src|width|height|name|align|class|frameborder|allowfullscreen|allow|style]',
     'valid_elements': '*[*]',
 }
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
