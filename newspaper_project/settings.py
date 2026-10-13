@@ -27,8 +27,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SELECT_KEY','clave-por-defecto-solo-para-desarrollo-local')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', 'True') == 'True'
-
+#DEBUG = os.environ.get('DEBUG', 'True') == 'True'
+DEBUG = 'True'
 ALLOWED_HOSTS = [
     #os.environ.get('DJANGO_HOSTS', '127.0.0.1,localhost').split(',')
     'django-periodico.onrender.com',
