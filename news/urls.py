@@ -28,6 +28,7 @@ urlpatterns = [
     path('api/reset-theme/', views.reset_theme, name='reset_theme'),
     path('tinymce/', include('tinymce.urls')),
     path('tinymce/upload/', tinymce_views.tinymce_upload_image, name='tinymce_upload'),
+    path('test-debug/', views.test_debug_view, name='test_debug'), # <-- AGREGA ESTA LÍNEA
 ]
 
 if settings.DEBUG:
