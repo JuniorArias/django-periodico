@@ -103,9 +103,8 @@ if os.environ.get('DATABASE_URL'):
     # Producción: usar DATABASE_URL
     DATABASES = {
         'default': dj_database_url.config(
-            default=os.environ.get('DATABASE_URL'),
             conn_max_age=600,
-            ssl_require=False  # Cambiar a False para desarrollo
+            ssl_require=True  # Cambiar a False para desarrollo
         )
     }
 else:
@@ -118,9 +117,6 @@ else:
             'PASSWORD': os.environ.get('DB_PASSWORD', 'postgres'),
             'HOST': os.environ.get('DB_HOST', 'localhost'),
             'PORT': os.environ.get('DB_PORT', '5432'),
-            'CONN_MAX_AGE': 600,
-            'OPTIONS': {
-                'connect_timeout': 60,
             }
         }
     }
