@@ -188,6 +188,7 @@ class SiteConfigSerializer(serializers.ModelSerializer):
             'tagline', 
             'logo', 
             'primary_color', 
+            'secondary_color',
             'allow_registration',
             'enable_multilanguage',
             'default_language',

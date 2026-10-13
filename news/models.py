@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 from django.urls import reverse
+from tinymce.models import HTMLField
 
 
 # 1. PRIMERO: Modelo Category
@@ -53,7 +54,7 @@ class Post(models.Model):
     )
     title = models.CharField(max_length=200, help_text="Título del artículo")
     text = models.TextField(help_text="Resumen corto del artículo")
-    content = models.TextField(help_text="Contenido completo del artículo")
+    content = HTMLField(help_text="Contenido completo del artículo")
     image = models.ImageField(upload_to='posts/', blank=True, null=True, help_text="Imagen principal")
     category = models.ForeignKey(
         Category, 
@@ -157,39 +158,48 @@ class Like(models.Model):
     def __str__(self):
         return f"{self.user.username} liked '{self.post.title[:30]}'"
 
+# news/models.py - Actualiza el modelo SiteConfig
+
 class SiteConfig(models.Model):
     """Configuración global del sitio (singleton)"""
     site_name = models.CharField(max_length=100, default='Periódico Digital')
-    site_url = models.URLField(help_text='URL pública del sitio (ej: https://miperiodico.com)')
+    site_url = models.URLField(help_text='URL pública del sitio')
     tagline = models.CharField(max_length=200, blank=True, default='Tu fuente de noticias')
     logo = models.ImageField(upload_to='config/', blank=True, null=True)
-    primary_color = models.CharField(max_length=7, default='#607D8B', help_text='Color hexadecimal (ej: #607D8B)')
-    allow_registration = models.BooleanField(default=True, help_text='Permitir registro de nuevos usuarios')
     
-    enable_multilanguage = models.BooleanField(
-        default=False,
-        help_text='Activar soporte multi-idioma en la aplicación'
-    )
-    default_language = models.CharField(
-        max_length=10,
-        default='es',
-        help_text='Idioma por defecto (ej: es, en, fr)'
-    )
-
-    THEME_CHOICES = [
-        ('light', 'Claro'),
-        ('dark', 'Oscuro'),
-        ('system', 'Según sistema'),
-    ]
-    default_theme = models.CharField(
-        max_length=10,
-        choices=THEME_CHOICES,
-        default='light',
-        help_text='Tema por defecto de la aplicación'
-    )
-
+    # ✅ Colores del tema claro
+    light_primary_color = models.CharField(max_length=7, default='#607D8B', help_text='Color primario en modo claro')
+    light_secondary_color = models.CharField(max_length=7, default='#FF9800', help_text='Color secundario en modo claro')
+    light_background_color = models.CharField(max_length=7, default='#F8F9FA', help_text='Fondo en modo claro')
+    light_text_color = models.CharField(max_length=7, default='#212529', help_text='Texto en modo claro')
+    
+    # ✅ Colores del tema oscuro
+    dark_primary_color = models.CharField(max_length=7, default='#37474F', help_text='Color primario en modo oscuro')
+    dark_secondary_color = models.CharField(max_length=7, default='#FFB74D', help_text='Color secundario en modo oscuro')
+    dark_background_color = models.CharField(max_length=7, default='#1A1A1A', help_text='Fondo en modo oscuro')
+    dark_text_color = models.CharField(max_length=7, default='#E0E0E0', help_text='Texto en modo oscuro')
+    
+    # ✅ Propiedades que devuelven el color según el tema activo (para compatibilidad)
+    @property
+    def primary_color(self):
+        return self.light_primary_color if self.current_theme == 'light' else self.dark_primary_color
+    
+    @property
+    def secondary_color(self):
+        return self.light_secondary_color if self.current_theme == 'light' else self.dark_secondary_color
+    
+    @property
+    def current_theme(self):
+        # Detectar tema desde el request o localStorage
+        return 'light'  # Por defecto, se sobreescribe en el context processor
+    
+    allow_registration = models.BooleanField(default=True)
+    enable_multilanguage = models.BooleanField(default=False)
+    default_language = models.CharField(max_length=10, default='es')
+    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
     class Meta:
         verbose_name = 'Configuración del Sitio'
         verbose_name_plural = 'Configuración del Sitio'
@@ -198,9 +208,7 @@ class SiteConfig(models.Model):
         return f"Configuración: {self.site_name}"
 
     def save(self, *args, **kwargs):
-        # Asegurar que solo exista una instancia (singleton)
         if not self.pk and SiteConfig.objects.exists():
-            # Si ya existe, actualizar la primera instancia
             existing = SiteConfig.objects.first()
             self.pk = existing.pk
         super().save(*args, **kwargs)
@@ -246,3 +254,46 @@ class Notification(models.Model):
 
     def __str__(self):
         return f"{self.notification_type} para {self.recipient.username}"
+
+class CustomStyle(models.Model):
+    """Estilos personalizados por elemento CSS"""
+    selector = models.CharField(max_length=200, unique=True)
+    friendly_name = models.CharField(max_length=100)
+    styles = models.JSONField(default=dict)
+    
+    # ✅ NUEVO: Alcance del estilo
+    SCOPE_CHOICES = [
+        ('admin', 'Solo Admin'),
+        ('public', 'Solo Sitio Público'),
+        ('global', 'Ambos (Admin + Público)'),
+    ]
+    scope = models.CharField(
+        max_length=10,
+        choices=SCOPE_CHOICES,
+        default='admin',
+        help_text='Dónde se aplica este estilo'
+    )
+    
+    category = models.CharField(
+        max_length=50,
+        choices=[
+            ('layout', 'Estructura'),
+            ('colors', 'Colores'),
+            ('typography', 'Tipografía'),
+            ('buttons', 'Botones'),
+            ('forms', 'Formularios'),
+            ('cards', 'Tarjetas'),
+            ('navigation', 'Navegación'),
+        ],
+        default='layout'
+    )
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Estilo Personalizado'
+        verbose_name_plural = 'Estilos Personalizados'
+        ordering = ['scope', 'category', 'friendly_name']
+
+    def __str__(self):
+        scope_label = dict(self.SCOPE_CHOICES).get(self.scope, 'Desconocido')
+        return f"{self.friendly_name} [{scope_label}]"

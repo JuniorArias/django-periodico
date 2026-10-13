@@ -1,0 +1,228 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block title %}Editor Visual Completo{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    /* Filtros de Scope */
+    .scope-filters {
+        display: flex;
+        gap: 10px;
+        padding: 15px 20px;
+        background: #f5f5f5;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    .scope-filter-btn {
+        padding: 8px 16px;
+        border: 2px solid #ddd;
+        background: white;
+        border-radius: 20px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.2s;
+    }
+
+    .scope-filter-btn:hover {
+        border-color: #607D8B;
+    }
+
+    .scope-filter-btn.active {
+        background: #607D8B;
+        color: white;
+        border-color: #607D8B;
+    }
+
+    /* Badge de Scope */
+    .scope-badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 10px;
+        font-weight: 600;
+        margin-left: 8px;
+    }
+
+    .scope-badge.admin {
+        background: #e3f2fd;
+        color: #1976d2;
+    }
+
+    .scope-badge.public {
+        background: #f3e5f5;
+        color: #7b1fa2;
+    }
+
+    .scope-badge.global {
+        background: #e8f5e9;
+        color: #388e3c;
+    }
+
+    /* Selector de Scope en propiedades */
+    .scope-selector {
+        margin-bottom: 15px;
+        padding: 10px;
+        background: #f9f9f9;
+        border-radius: 6px;
+    }
+
+    .scope-selector label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 600;
+        font-size: 12px;
+        color: #666;
+    }
+
+    .scope-selector select {
+        width: 100%;
+        padding: 6px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<button id="open-editor-btn">🎨 Editar Diseño</button>
+
+<div id="editor-overlay"></div>
+
+<div id="editor-panel">
+    <div class="editor-header">
+        <h2>🎨 Editor Visual Completo</h2>
+        <p>Admin + Sitio Público + App Flutter</p>
+    </div>
+
+    <!-- Filtros de Scope -->
+    <div class="scope-filters">
+        <button class="scope-filter-btn {% if current_scope == 'all' %}active{% endif %}" 
+                data-scope="all">
+            🌍 Todos
+        </button>
+        <button class="scope-filter-btn {% if current_scope == 'admin' %}active{% endif %}" 
+                data-scope="admin">
+            🔧 Admin
+        </button>
+        <button class="scope-filter-btn {% if current_scope == 'public' %}active{% endif %}" 
+                data-scope="public">
+            🌐 Público
+        </button>
+        <button class="scope-filter-btn {% if current_scope == 'global' %}active{% endif %}" 
+                data-scope="global">
+            ⚡ Global
+        </button>
+    </div>
+
+    <!-- Lista de elementos -->
+    <div id="elements-list">
+        {% for scope, categories in grouped.items %}
+        <div class="scope-section">
+            <h3 style="padding: 10px 20px; background: #f0f0f0; margin: 0;">
+                {% if scope == 'admin' %}🔧 Admin
+                {% elif scope == 'public' %}🌐 Sitio Público
+                {% elif scope == 'global' %}⚡ Global
+                {% endif %}
+            </h3>
+            
+            {% for category, elements in categories.items %}
+            <div class="editor-category">
+                <div class="category-header" data-category="{{ scope }}-{{ category }}">
+                    <span>
+                        {% if category == 'layout' %}📐 Estructura
+                        {% elif category == 'colors' %}🎨 Colores
+                        {% elif category == 'typography' %}🔤 Tipografía
+                        {% elif category == 'buttons' %}🔘 Botones
+                        {% elif category == 'forms' %}📝 Formularios
+                        {% elif category == 'cards' %}🃏 Tarjetas
+                        {% elif category == 'navigation' %}🧭 Navegación
+                        {% endif %}
+                    </span>
+                    <span class="arrow">▼</span>
+                </div>
+                <div class="category-content" data-category-content="{{ scope }}-{{ category }}">
+                    {% for element in elements %}
+                    <div class="editable-element" 
+                         data-id="{{ element.id }}" 
+                         data-selector="{{ element.selector }}"
+                         data-name="{{ element.friendly_name }}"
+                         data-scope="{{ element.scope }}">
+                        <div class="editable-element-name">
+                            {{ element.friendly_name }}
+                            <span class="scope-badge {{ element.scope }}">{{ element.scope }}</span>
+                        </div>
+                        <div class="editable-element-selector">{{ element.selector }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Panel de Propiedades -->
+    <div id="properties-panel">
+        <h3 id="current-element-name" style="margin: 0 0 15px 0;"></h3>
+        
+        <!-- Selector de Scope -->
+        <div class="scope-selector">
+            <label>Alcance del Estilo:</label>
+            <select id="element-scope">
+                <option value="admin">🔧 Solo Admin</option>
+                <option value="public">🌐 Solo Sitio Público</option>
+                <option value="global">⚡ Global (Ambos)</option>
+            </select>
+        </div>
+        
+        <div id="properties-content"></div>
+        
+        <div class="editor-actions">
+            <button class="editor-btn editor-btn-save" id="save-btn">💾 Guardar</button>
+            <button class="editor-btn editor-btn-reset" id="reset-btn">↺ Reset</button>
+        </div>
+    </div>
+</div>
+
+<div class="editor-toast" id="editor-toast"></div>
+
+<script>
+// ... (mismo JavaScript que antes, pero agregando esto)
+
+// Filtros de Scope
+document.querySelectorAll('.scope-filter-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const scope = this.dataset.scope;
+        window.location.href = `?scope=${scope}`;
+    });
+});
+
+// Cambiar scope del elemento
+document.getElementById('element-scope').addEventListener('change', async function() {
+    if (!currentElement) return;
+    
+    try {
+        const response = await fetch('/admin/api/update-scope/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                id: parseInt(currentElement.id),
+                scope: this.value
+            })
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+            showToast('✅ Alcance actualizado');
+        }
+    } catch (error) {
+        showToast('❌ Error: ' + error.message);
+    }
+});
+</script>
+{% endblock %}

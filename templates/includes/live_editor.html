@@ -1,0 +1,327 @@
+{% if request.user.is_superuser and request.GET.edit == 'true' %}
+<style>
+    /* Estilos del Modo Edición en Vivo */
+    body.live-editor-mode {
+        cursor: default !important;
+    }
+    
+    /* Resaltado al pasar el mouse */
+    body.live-editor-mode *:hover {
+        outline: 2px dashed #007cba !important;
+        outline-offset: 2px !important;
+        cursor: pointer !important;
+        position: relative;
+    }
+
+    /* Etiqueta flotante con el nombre del elemento */
+    body.live-editor-mode *:hover::after {
+        content: attr(data-live-editor-label);
+        position: absolute;
+        top: -25px;
+        left: 0;
+        background: #007cba;
+        color: white;
+        font-size: 11px;
+        padding: 2px 6px;
+        border-radius: 3px;
+        white-space: nowrap;
+        z-index: 999999;
+        pointer-events: none;
+    }
+
+    /* Botón flotante principal */
+    #live-editor-toggle {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        background: #007cba;
+        color: white;
+        border: none;
+        border-radius: 50px;
+        padding: 15px 25px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        z-index: 1000000;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    /* Panel lateral estilo Elementor */
+    #live-editor-panel {
+        position: fixed;
+        top: 0;
+        right: -400px;
+        width: 380px;
+        height: 100vh;
+        background: white;
+        box-shadow: -5px 0 25px rgba(0,0,0,0.2);
+        z-index: 1000001;
+        transition: right 0.3s ease;
+        display: flex;
+        flex-direction: column;
+    }
+
+    #live-editor-panel.open {
+        right: 0;
+    }
+
+    .editor-panel-header {
+        background: #007cba;
+        color: white;
+        padding: 20px;
+        font-weight: bold;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .editor-panel-body {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+    }
+
+    .editor-panel-footer {
+        padding: 20px;
+        border-top: 1px solid #ddd;
+        background: #f9f9f9;
+        display: flex;
+        gap: 10px;
+    }
+
+    .editor-input-group {
+        margin-bottom: 15px;
+    }
+
+    .editor-input-group label {
+        display: block;
+        font-size: 12px;
+        font-weight: 600;
+        color: #555;
+        margin-bottom: 5px;
+        text-transform: uppercase;
+    }
+
+    .editor-input-group input[type="color"] {
+        width: 100%;
+        height: 40px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .editor-input-group input[type="text"] {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 13px;
+    }
+
+    .btn-save {
+        flex: 1;
+        background: #007cba;
+        color: white;
+        border: none;
+        padding: 12px;
+        border-radius: 4px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .btn-close {
+        background: #ddd;
+        color: #333;
+        border: none;
+        padding: 12px;
+        border-radius: 4px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+</style>
+
+<button id="live-editor-toggle" onclick="toggleLiveEditor()">
+    ✏️ Editar Página
+</button>
+
+<div id="live-editor-panel">
+    <div class="editor-panel-header">
+        <span>🎨 Editor en Vivo</span>
+        <span style="cursor:pointer" onclick="toggleLiveEditor()">✕</span>
+    </div>
+    <div class="editor-panel-body" id="editor-properties">
+        <p style="color:#666; text-align:center; margin-top:50px;">
+            Haz clic en cualquier elemento de la página para editarlo.
+        </p>
+    </div>
+    <div class="editor-panel-footer">
+        <button class="btn-close" onclick="toggleLiveEditor()">Cancelar</button>
+        <button class="btn-save" onclick="saveLiveStyles()">💾 Guardar Cambios</button>
+    </div>
+</div>
+
+<script>
+let currentElement = null;
+let liveStyles = {};
+
+function toggleLiveEditor() {
+    document.body.classList.toggle('live-editor-mode');
+    document.getElementById('live-editor-panel').classList.toggle('open');
+    
+    if (document.body.classList.contains('live-editor-mode')) {
+        document.getElementById('live-editor-toggle').style.display = 'none';
+    } else {
+        document.getElementById('live-editor-toggle').style.display = 'flex';
+        currentElement = null;
+    }
+}
+
+// Detectar clic en elementos
+document.addEventListener('click', function(e) {
+    if (!document.body.classList.contains('live-editor-mode')) return;
+    if (e.target.id === 'live-editor-toggle' || e.target.closest('#live-editor-panel')) return;
+    
+    e.preventDefault();
+    e.stopPropagation();
+    
+    currentElement = e.target;
+    openEditorForElement(currentElement);
+}, true);
+
+function openEditorForElement(el) {
+    const computed = window.getComputedStyle(el);
+    const selector = generateSelector(el);
+    
+    // Guardar referencia
+    liveStyles = {
+        selector: selector,
+        background: rgbToHex(computed.backgroundColor) || '#ffffff',
+        color: rgbToHex(computed.color) || '#000000',
+        padding: computed.padding,
+        margin: computed.margin,
+        borderRadius: computed.borderRadius,
+        fontSize: computed.fontSize,
+        fontWeight: computed.fontWeight
+    };
+
+    // Renderizar panel
+    const panel = document.getElementById('editor-properties');
+    panel.innerHTML = `
+        <div style="background:#f0f0f0; padding:10px; border-radius:4px; margin-bottom:15px; font-size:12px; word-break:break-all;">
+            <strong>Elemento:</strong> ${el.tagName.toLowerCase()}<br>
+            <strong>Selector:</strong> <code>${selector}</code>
+        </div>
+
+        <div class="editor-input-group">
+            <label>Color de Fondo</label>
+            <input type="color" value="${liveStyles.background}" oninput="updateStyle('background', this.value)">
+        </div>
+        <div class="editor-input-group">
+            <label>Color de Texto</label>
+            <input type="color" value="${liveStyles.color}" oninput="updateStyle('color', this.value)">
+        </div>
+        <div class="editor-input-group">
+            <label>Padding (ej: 10px 20px)</label>
+            <input type="text" value="${liveStyles.padding}" oninput="updateStyle('padding', this.value)">
+        </div>
+        <div class="editor-input-group">
+            <label>Margin (ej: 10px 0)</label>
+            <input type="text" value="${liveStyles.margin}" oninput="updateStyle('margin', this.value)">
+        </div>
+        <div class="editor-input-group">
+            <label>Border Radius (ej: 8px)</label>
+            <input type="text" value="${liveStyles.borderRadius}" oninput="updateStyle('borderRadius', this.value)">
+        </div>
+        <div class="editor-input-group">
+            <label>Tamaño de Fuente (ej: 16px)</label>
+            <input type="text" value="${liveStyles.fontSize}" oninput="updateStyle('fontSize', this.value)">
+        </div>
+    `;
+}
+
+function updateStyle(property, value) {
+    if (!currentElement) return;
+    liveStyles[property] = value;
+    
+    // Aplicar en tiempo real (camelCase para JS)
+    const jsProperty = property.replace(/-([a-z])/g, function (g) { return g[1].toUpperCase(); });
+    currentElement.style[jsProperty] = value;
+}
+
+function saveLiveStyles() {
+    if (!liveStyles.selector) return;
+
+    // Mapear de camelCase a kebab-case para CSS
+    const cssStyles = {};
+    for (const [key, value] of Object.entries(liveStyles)) {
+        if (key !== 'selector' && value) {
+            const cssKey = key.replace(/([A-Z])/g, "-$1").toLowerCase();
+            cssStyles[cssKey] = value;
+        }
+    }
+
+    fetch('/api/save-style/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({
+            selector: liveStyles.selector,
+            friendly_name: liveStyles.selector,
+            scope: 'global',
+            category: 'layout',
+            styles: cssStyles
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            alert('✅ Estilos guardados correctamente');
+            toggleLiveEditor();
+        } else {
+            alert('❌ Error: ' + data.error);
+        }
+    });
+}
+
+// Helpers
+function generateSelector(el) {
+    if (el.id) return `#${el.id}`;
+    if (el.className) {
+        const classes = el.className.split(' ').filter(c => c && !c.startsWith('live-editor')).join('.');
+        if (classes) return `${el.tagName.toLowerCase()}.${classes}`;
+    }
+    return el.tagName.toLowerCase();
+}
+
+function rgbToHex(rgb) {
+    if (!rgb || rgb === 'rgba(0, 0, 0, 0)' || rgb === 'transparent') return null;
+    if (rgb.startsWith('#')) return rgb;
+    const result = rgb.match(/\d+/g);
+    if (!result || result.length < 3) return null;
+    return '#' + result.slice(0, 3).map(x => {
+        const hex = parseInt(x).toString(16);
+        return hex.length === 1 ? '0' + hex : hex;
+    }).join('');
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+{% endif %}

@@ -1,55 +1,90 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container mt-4">
-    <article class="card">
-        {% if post.image %}
-            <img src="{{ post.image.url }}" class="card-img-top" alt="{{ post.title }}" style="max-height: 500px; object-fit: cover;">
-        {% endif %}
-        
-        <div class="card-body">
-            <h1 class="card-title">{{ post.title }}</h1>
-            <p class="lead text-muted">{{ post.text }}</p>
-            
-            <hr>
-            
-            <div class="card-text" style="white-space: pre-wrap; line-height: 1.8;">
-                {{ post.content }}
-            </div>
+<div class="container mt-4 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <article class="card shadow-sm">
+                {% if post.image %}
+                    <img src="{{ post.image.url }}" class="card-img-top" alt="{{ post.title }}" style="max-height: 500px; object-fit: cover;">
+                {% endif %}
+                
+                <div class="card-body p-4 p-md-5">
+                    <h1 class="card-title mb-3" style="font-weight: 700; color: #2c3e50;">{{ post.title }}</h1>
+                    
+                    <p class="lead text-muted mb-4" style="font-size: 1.25rem; line-height: 1.6; border-left: 4px solid var(--secondary-color, #FF9800); padding-left: 1rem;">
+                        {{ post.text }}
+                    </p>
+                    
+                    <div class="d-flex align-items-center mb-4 pb-3" style="border-bottom: 1px solid #e0e0e0;">
+                        <p class="text-muted mb-0">
+                            <small>
+                                <strong>Por {{ post.author }}</strong> | 
+                                <i class="bi bi-calendar"></i> {{ post.created_at|date:"d F Y, H:i" }}
+                                {% if post.category %}
+                                    | <span class="badge bg-primary">{{ post.category.name }}</span>
+                                {% endif %}
+                            </small>
+                        </p>
+                    </div>
+                    
+                    <div class="post-content">
+                        {{ post.content|safe }}
+                    </div>
 
-            {% if post.images.all %}
-                <hr>
-                <h4>Galería de Imágenes</h4>
-                <div class="row">
-                    {% for img in post.images.all %}
-                        <div class="col-md-4 mb-3">
-                            <img src="{{ img.image.url }}" class="img-fluid rounded" alt="{{ img.caption }}">
-                            {% if img.caption %}
-                                <small class="text-muted d-block mt-1">{{ img.caption }}</small>
-                            {% endif %}
+                    {% if post.images.all %}
+                        <hr class="my-5">
+                        <h4 class="mb-4" style="font-weight: 600; color: #2c3e50;">
+                            📸 Galería de Imágenes
+                        </h4>
+                        <div class="row g-3">
+                            {% for img in post.images.all %}
+                                <div class="col-md-4 col-sm-6">
+                                    <div class="card h-100 border-0 shadow-sm">
+                                        <img src="{{ img.image.url }}" class="card-img-top rounded" alt="{{ img.caption }}" style="height: 200px; object-fit: cover;">
+                                        {% if img.caption %}
+                                            <div class="card-body p-2">
+                                                <small class="text-muted">{{ img.caption }}</small>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
                         </div>
-                    {% endfor %}
-                </div>
-            {% endif %}
+                    {% endif %}
 
-            <hr>
-            
-            <p class="text-muted">
-                <small>
-                    Por {{ post.author }} | {{ post.created_at|date:"d F Y, H:i" }}
-                </small>
-            </p>
-            
-            {% if can_edit %}
-                <a href="{% url 'post_edit' post.pk %}" class="btn btn-warning">Editar</a>
-            {% endif %}
-            
-            {% if can_delete %}
-                <a href="{% url 'post_delete' post.pk %}" class="btn btn-danger">Borrar</a>
-            {% endif %}
-            
-            <a href="{% url 'home' %}" class="btn btn-secondary">Volver</a>
+                    <hr class="my-5">
+                    
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <div>
+                            {% if can_edit %}
+                                <a href="{% url 'post_edit' post.pk %}" class="btn btn-warning me-2">
+                                    ✏️ Editar
+                                </a>
+                            {% endif %}
+                            
+                            {% if can_delete %}
+                                <a href="{% url 'post_delete' post.pk %}" class="btn btn-danger me-2">
+                                    🗑️ Borrar
+                                </a>
+                            {% endif %}
+                            
+                            <a href="{% url 'home' %}" class="btn btn-secondary">
+                                ← Volver al inicio
+                            </a>
+                        </div>
+                        
+                        <div class="text-muted">
+                            <small>
+                                {% if post.updated_at != post.created_at %}
+                                    Última edición: {{ post.updated_at|date:"d F Y, H:i" }}
+                                {% endif %}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </article>
         </div>
-    </article>
+    </div>
 </div>
 {% endblock %}

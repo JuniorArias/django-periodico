@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{{ site_name }}</title>
+    <style>
+        /* Estilos base del sitio público */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        /* Estilos personalizados del editor */
+        {{ public_css|safe }}
+    </style>
+</head>
+<body>
+    <header class="public-header">
+        <h1>{{ site_name }}</h1>
+        <nav class="public-nav">
+            <a href="/">Inicio</a>
+            <a href="/about">Acerca</a>
+        </nav>
+    </header>
+    
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+    
+    <footer class="footer">
+        <p>&copy; 2024 {{ site_name }}</p>
+    </footer>
+    {% include 'includes/live_editor.html' %}
+</body>
+</html>

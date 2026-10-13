@@ -62,6 +62,7 @@ INSTALLED_APPS = [
     # Local
     'news',
     'users',
+    'tinymce',
 ]
 
 MIDDLEWARE = [
@@ -96,16 +97,33 @@ TEMPLATES = [
 WSGI_APPLICATION = 'newspaper_project.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    'default': dj_database_url.config(
-        default=os.environ.get('DATABASE_URL'),
-        conn_max_age=600,
-        ssl_require=True
-    )
-}
+#  Configuración de base de datos adaptable
+if os.environ.get('DATABASE_URL'):
+    # Producción: usar DATABASE_URL
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=os.environ.get('DATABASE_URL'),
+            conn_max_age=600,
+            ssl_require=False  # Cambiar a False para desarrollo
+        )
+    }
+else:
+    # Desarrollo local: configuración directa
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.environ.get('DB_NAME', 'newspaper_db'),
+            'USER': os.environ.get('DB_USER', 'postgres'),
+            'PASSWORD': os.environ.get('DB_PASSWORD', 'postgres'),
+            'HOST': os.environ.get('DB_HOST', 'localhost'),
+            'PORT': os.environ.get('DB_PORT', '5432'),
+            'CONN_MAX_AGE': 600,
+            'OPTIONS': {
+                'connect_timeout': 60,
+            }
+        }
+    }
 
 
 # Password validation
@@ -126,6 +144,39 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# ✅ Configuración de TinyMCE
+TINYMCE_DEFAULT_CONFIG = {
+    'height': 500,
+    'width': '100%',
+    'theme': 'silver',
+    'plugins': '''
+        advlist autolink lists link image charmap print preview anchor
+        searchreplace visualblocks code fullscreen
+        insertdatetime media table paste code help wordcount
+    ''',
+    'toolbar': '''
+        undo redo | formatselect | bold italic underline strikethrough |
+        alignleft aligncenter alignright alignjustify |
+        bullist numlist outdent indent | link image media |
+        removeformat code | help
+    ''',
+    'content_css': '/static/css/tinymce.css',
+    'image_advtab': True,
+    'file_picker_types': 'image',
+    'automatic_uploads': True,
+    'images_upload_url': '/tinymce/upload/',
+    'relative_urls': False,
+    'remove_script_host': False,
+    # ✅ Configuración mejorada para videos
+    'media_alt_source': False,
+    'media_poster': False,
+    'media_dimensions': False,
+    'media_embed_handling': True,
+    
+    # ✅ Permitir iframes para videos embebidos
+    'extended_valid_elements': 'iframe[src|width|height|name|align|class|frameborder|allowfullscreen]',
+    'valid_elements': '*[*]',
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
