@@ -1,4 +1,7 @@
 # news/views.py
+import traceback
+from django.conf import settings
+from django.http import HttpResponse
 from django.views.generic import TemplateView, ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
@@ -35,6 +38,35 @@ from .serializers import (
 # ==========================================
 # VISTAS WEB (Frontend Django)
 # ==========================================
+
+def test_debug_view(request):
+    try:
+        # 1. Verificar variables de entorno
+        debug_status = settings.DEBUG
+        allowed_hosts = settings.ALLOWED_HOSTS
+        
+        # 2. Verificar conexión a base de datos
+        post_count = Post.objects.count()
+        last_post = Post.objects.last()
+        
+        return HttpResponse(f"""
+            <h2>✅ Diagnóstico Exitoso</h2>
+            <p><strong>DEBUG está:</strong> {debug_status}</p>
+            <p><strong>ALLOWED_HOSTS:</strong> {allowed_hosts}</p>
+            <p><strong>Total de Posts en BD:</strong> {post_count}</p>
+            <p><strong>Último Post:</strong> {last_post.title if last_post else 'Ninguno'}</p>
+            <hr>
+            <p>Si ves esto, Django, la BD y las variables de entorno funcionan bien. El error está en tu plantilla HTML o en una vista específica.</p>
+        """)
+    except Exception as e:
+        # Si algo falla, esto mostrará el error REAL en el navegador
+        return HttpResponse(f"""
+            <h2>❌ Error Encontrado</h2>
+            <p><strong>Excepción:</strong> {e}</p>
+            <pre style="background:#fee; padding:15px; border:1px solid red; overflow:auto;">
+{traceback.format_exc()}
+            </pre>
+        """, status=500)
 
 class HomePageView(ListView):
     model = Post
@@ -81,6 +113,7 @@ class PostDetailView(DetailView):
         context['can_edit'] = (user == obj.author) or user.has_perm('news.change_post') or user.is_superuser
         context['can_delete'] = (user == obj.author) or user.has_perm('news.delete_post') or user.is_superuser
         return context
+
 
 
 class PostCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
