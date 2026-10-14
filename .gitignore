@@ -4,7 +4,7 @@
    # Base de datos local (no la subimos, la crearemos en la nube)
    db.sqlite3
    
-   # Archivos generados por Python
+   # Archivos generados por Python.
    staticfiles/
    __pycache__/
    *.py[cod]
