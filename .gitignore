@@ -5,9 +5,11 @@
    db.sqlite3
    
    # Archivos generados por Python
+   staticfiles/
    __pycache__/
    *.py[cod]
    *$py.class
+   media/
    
    # Entornos virtuales
    venv/
