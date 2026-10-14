@@ -1,43 +1,60 @@
-/* news/static/news/base.css */
+/* ==========================================
+   DESIGN TOKENS (Sincronizados con Flutter)
+   ========================================== */
+
+/* TEMA CLARO (Por defecto) */
+:root {
+    --primary-color: #607D8B; 
+    --secondary-color: #FF9800;
+    --bg-color: #F8F9FA;
+    --card-bg: #FFFFFF;
+    --text-primary: #212529;
+    --text-secondary: #6c757d;
+    
+    /* Design Tokens de Flutter: BorderRadius.circular(12) y elevation: 2 */
+    --border-radius: 12px;
+    --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* TEMA OSCURO */
+[data-theme="dark"] {
+    --bg-color: #1A1A1A;
+    --card-bg: #1E1E1E;
+    --text-primary: #E0E0E0;
+    --text-secondary: #A0A0A0;
+    --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* ==========================================
+   APLICACIÓN GLOBAL
+   ========================================== */
+
 body {
-    font-family: 'Source Sans Pro', sans-serif;
+    font-family: 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     font-size: 18px;
     margin: 0;
     padding: 0;
-    background-color: #f9f9f9;
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-header {
-    border-bottom: 1px solid #999;
-    margin-bottom: 2rem;
-    display: flex;
-    padding: 1rem 2rem;
-    background-color: #fff;
-}
-
-header a {
-    color: #333;
-    text-decoration: none;
-    margin-right: 1rem;
-    font-weight: bold;
-}
-
-header a:hover {
-    color: red;
-}
-
-main {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 0 1rem;
-}
-
-.post-entry {
-    margin-bottom: 2rem;
-    background-color: #fff;
-    padding: 1.5rem;
-    border-radius: 5px;
+/* Navbar (AppBar de Flutter) */
+.navbar {
+    background-color: var(--primary-color) !important;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: background-color 0.3s ease;
+}
+
+/* Tarjetas (Cards) idénticas a Flutter CardTheme */
+.post-entry, .card {
+    background-color: var(--card-bg) !important;
+    border-radius: var(--border-radius) !important;
+    box-shadow: var(--card-shadow) !important;
+    border: 1px solid rgba(128, 128, 128, 0.1) !important;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    margin-bottom: 2rem;
+    padding: 1.5rem;
 }
 
 .post-entry h2 {
@@ -46,21 +63,22 @@ main {
 
 .post-entry h2 a, 
 .post-entry h2 a:visited {
-    color: #0056b3;
+    color: var(--primary-color);
     text-decoration: none;
+    transition: color 0.2s ease;
 }
 
 .post-entry h2 a:hover {
-    color: red;
+    color: var(--secondary-color);
 }
 
 .post-entry p {
     margin: 0;
     font-weight: 400;
-    color: #555;
+    color: var(--text-secondary);
 }
 
-/* --- Estilos para que los formularios de Django parezcan Bootstrap --- */
+/* --- Formularios (Flutter InputDecorationTheme) --- */
 form p {
     margin-bottom: 1rem;
 }
@@ -69,7 +87,7 @@ form label {
     display: inline-block;
     margin-bottom: 0.5rem;
     font-weight: 600;
-    color: #333;
+    color: var(--text-primary);
 }
 
 form input[type="text"],
@@ -79,38 +97,123 @@ form textarea,
 form select {
     display: block;
     width: 100%;
-    padding: 0.5rem 0.75rem;
+    padding: 0.75rem 1rem;
     font-size: 1rem;
     font-weight: 400;
     line-height: 1.5;
-    color: #212529;
-    background-color: #fff;
-    border: 1px solid #ced4da;
-    border-radius: 0.375rem;
+    color: var(--text-primary);
+    background-color: var(--card-bg);
+    border: 1px solid rgba(128, 128, 128, 0.2);
+    border-radius: var(--border-radius);
     transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
 form input:focus,
 form textarea:focus,
 form select:focus {
-    border-color: #86b7fe;
+    border-color: var(--primary-color);
     outline: 0;
-    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    box-shadow: 0 0 0 0.2rem rgba(96, 125, 139, 0.25);
 }
 
-/* Estilo para el texto de ayuda de Django (ej. "La contraseña debe tener 8 caracteres") */
 .helptext {
     display: block;
     font-size: 0.875em;
-    color: #6c757d;
+    color: var(--text-secondary);
     margin-top: 0.25rem;
 }
 
-/* Estilo para los mensajes de error de Django */
 .errorlist {
     list-style-type: none;
     padding: 0;
     margin: 0 0 0.5rem 0;
     color: #dc3545;
     font-size: 0.875em;
+}
+
+/* Botones */
+.btn-primary {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+    border-radius: var(--border-radius) !important;
+    color: #FFFFFF !important;
+    transition: background-color 0.2s ease;
+}
+
+.btn-primary:hover {
+    filter: brightness(0.9);
+}
+
+/* Contenido del Post (TinyMCE) */
+.post-content {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 18px;
+    line-height: 1.8;
+    color: var(--text-primary);
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.post-content h1,
+.post-content h2,
+.post-content h3 {
+    margin-top: 2em;
+    margin-bottom: 0.5em;
+    color: var(--text-primary);
+}
+
+.post-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--border-radius);
+    margin: 1.5em 0;
+    box-shadow: var(--card-shadow);
+}
+
+.post-content blockquote {
+    border-left: 4px solid var(--secondary-color);
+    padding: 1em 1.5em;
+    margin: 1.5em 0;
+    color: var(--text-secondary);
+    font-style: italic;
+    font-size: 1.1em;
+    background-color: rgba(128, 128, 128, 0.05);
+    border-radius: 0 var(--border-radius) var(--border-radius) 0;
+}
+
+.post-content pre {
+    background: rgba(128, 128, 128, 0.1);
+    padding: 1em;
+    border-radius: var(--border-radius);
+    overflow-x: auto;
+}
+
+.post-content code {
+    background: rgba(128, 128, 128, 0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9em;
+    color: var(--secondary-color);
+}
+
+.post-content table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1.5em 0;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+}
+
+.post-content th,
+.post-content td {
+    border: 1px solid rgba(128, 128, 128, 0.2);
+    padding: 12px;
+    text-align: left;
+}
+
+.post-content th {
+    background: var(--primary-color);
+    color: #FFFFFF;
+    font-weight: 600;
 }
