@@ -17,8 +17,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRECT_KEY','clave-por-defecto-solo-para-desarrollo-local')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', 'True').lower() in ['true', '1', 'yes']
-#DEBUG = 'True'
+#DEBUG = os.environ.get('DEBUG', 'True').lower() in ['true', '1', 'yes']
+DEBUG = 'True'
 
 # ==========================================
 # 2. ALLOWED_HOSTS A PRUEBA DE FALLOS PARA RENDER
