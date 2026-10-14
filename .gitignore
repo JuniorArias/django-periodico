@@ -5,7 +5,6 @@
    db.sqlite3
    
    # Archivos generados por Python.
-   staticfiles/
    __pycache__/
    *.py[cod]
    *$py.class
@@ -21,4 +20,5 @@
    .vscode/
    .idea/
    *.swp
-   *.swo
+   *.swo"staticfiles/" 
+   staticfiles/
