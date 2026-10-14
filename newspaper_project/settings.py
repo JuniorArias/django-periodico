@@ -18,7 +18,7 @@ SECRET_KEY = os.environ.get('SECRECT_KEY','clave-por-defecto-solo-para-desarroll
 
 # SECURITY WARNING: don't run with debug turned on in production!
 #DEBUG = os.environ.get('DEBUG', 'True').lower() in ['true', '1', 'yes']
-DEBUG = 'True'
+DEBUG = 'False'
 
 # ==========================================
 # 2. ALLOWED_HOSTS A PRUEBA DE FALLOS PARA RENDER
