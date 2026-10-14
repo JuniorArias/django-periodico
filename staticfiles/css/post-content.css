@@ -1,0 +1,214 @@
+/* ========================================
+   ESTILOS PARA CONTENIDO DE POSTS (TinyMCE)
+   ======================================== */
+
+.post-content {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-size: 18px;
+    line-height: 1.8;
+    color: #333;
+}
+
+/* Títulos */
+.post-content h1,
+.post-content h2,
+.post-content h3,
+.post-content h4,
+.post-content h5,
+.post-content h6 {
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+.post-content h1 { font-size: 2em; }
+.post-content h2 { font-size: 1.75em; }
+.post-content h3 { font-size: 1.5em; }
+.post-content h4 { font-size: 1.25em; }
+
+/* Párrafos */
+.post-content p {
+    margin-bottom: 1em;
+}
+
+/* Enlaces */
+.post-content a {
+    color: var(--secondary-color, #FF9800);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.2s ease;
+}
+
+.post-content a:hover {
+    border-bottom-color: var(--secondary-color, #FF9800);
+}
+
+/* Imágenes */
+.post-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin: 1.5em 0;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    display: block;
+}
+
+/* Citas */
+.post-content blockquote {
+    border-left: 4px solid var(--secondary-color, #FF9800);
+    padding-left: 1.5em;
+    margin: 1.5em 0;
+    color: #666;
+    font-style: italic;
+    font-size: 1.1em;
+    background: #f8f9fa;
+    padding: 1em 1.5em;
+    border-radius: 0 8px 8px 0;
+}
+
+/* Código */
+.post-content pre {
+    background: #f5f5f5;
+    padding: 1em;
+    border-radius: 6px;
+    overflow-x: auto;
+    border: 1px solid #e0e0e0;
+}
+
+.post-content code {
+    background: #f5f5f5;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9em;
+    color: #e83e8c;
+}
+
+.post-content pre code {
+    background: transparent;
+    padding: 0;
+    color: inherit;
+}
+
+/* Tablas */
+.post-content table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1.5em 0;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.post-content th,
+.post-content td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: left;
+}
+
+.post-content th {
+    background: var(--primary-color, #607D8B);
+    color: white;
+    font-weight: 600;
+}
+
+.post-content tr:nth-child(even) {
+    background: #f8f9fa;
+}
+
+.post-content tr:hover {
+    background: #f0f0f0;
+}
+
+/* Listas */
+.post-content ul,
+.post-content ol {
+    margin-bottom: 1em;
+    padding-left: 2em;
+}
+
+.post-content li {
+    margin-bottom: 0.5em;
+}
+
+/* Separadores */
+.post-content hr {
+    margin: 2em 0;
+    border: none;
+    border-top: 2px solid #e0e0e0;
+}
+
+/* Figuras con caption */
+.post-content figure {
+    margin: 1.5em 0;
+    text-align: center;
+}
+
+.post-content figcaption {
+    font-size: 0.9em;
+    color: #666;
+    margin-top: 0.5em;
+    font-style: italic;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .post-content {
+        font-size: 16px;
+    }
+    
+    .post-content h1 { font-size: 1.75em; }
+    .post-content h2 { font-size: 1.5em; }
+    .post-content h3 { font-size: 1.25em; }
+}
+
+/* ========================================
+   VIDEOS EMBEDIDOS (YouTube, Vimeo, etc.)
+   ======================================== */
+
+/* Contenedor responsive para videos */
+.post-content iframe {
+    max-width: 100%;
+    border-radius: 8px;
+    margin: 1.5em 0;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* Wrapper para videos 16:9 */
+.post-content .video-wrapper,
+.post-content .embed-responsive {
+    position: relative;
+    padding-bottom: 56.25%; /* 16:9 aspect ratio */
+    height: 0;
+    overflow: hidden;
+    max-width: 100%;
+    margin: 1.5em 0;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.post-content .video-wrapper iframe,
+.post-content .embed-responsive iframe,
+.post-content .video-wrapper object,
+.post-content .embed-responsive object,
+.post-content .video-wrapper embed,
+.post-content .embed-responsive embed {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    border-radius: 8px;
+}
+
+/* Videos HTML5 nativos */
+.post-content video {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin: 1.5em 0;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
