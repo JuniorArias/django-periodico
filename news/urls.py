@@ -6,6 +6,7 @@ from . import tinymce_views
 from . import views
 from .views import (HomePageView, AboutPageView, PostDetailView,
                     PostCreateView, PostUpdateView, PostDeleteView, SignUpView)
+from . import debug_views
 
 urlpatterns = [
     path('', HomePageView.as_view(), name='home'),
@@ -29,6 +30,7 @@ urlpatterns = [
     path('tinymce/', include('tinymce.urls')),
     path('tinymce/upload/', tinymce_views.tinymce_upload_image, name='tinymce_upload'),
     path('test-debug/', views.test_debug_view, name='test_debug'), # <-- AGREGA ESTA LÍNEA
+    path('debug/post/<int:post_id>/', debug_views.debug_post_detail, name='debug_post'),
 ]
 
 if settings.DEBUG:
