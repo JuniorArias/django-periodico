@@ -22,3 +22,4 @@
    *.swp
    *.swo"staticfiles/" 
    staticfiles/
+"staticfiles/" 
