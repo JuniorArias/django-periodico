@@ -4,21 +4,12 @@
 
 :root {
     /* Estos valores son reemplazados por el inline style de base.html */
-    --primary-color: #6e98c4; 
-    --secondary-color: #FF9800;
-    --bg-color: #F8F9FA;
-    --text-color: #212529;
-    
     /* Design Tokens de Flutter */
     --border-radius: 12px;
     --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 [data-theme="dark"] {
-    --primary-color: #223944;
-    --secondary-color: #FFB74D;
-    --bg-color: #1A1A1A;
-    --text-color: #E0E0E0;
     --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 

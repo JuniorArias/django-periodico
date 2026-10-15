@@ -21,7 +21,8 @@
    .idea/
    *.swp
    *.swo"staticfiles/" 
+   *.swo 
    staticfiles/
 "staticfiles/" 
 "staticfiles/" 
-staticfiles/ 
+staticfiles/
