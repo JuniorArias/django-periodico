@@ -10,37 +10,31 @@
        MAPEO DE SITECONFIG A VARIABLES NATIVAS DE DJANGO
        ========================================== */
     :root {
-        /* 1. Colores Principales (Header, Botones primarios) */
-        --primary: {{ primary_color|default:'#607D8B' }} !important;
+        /* Mapeo a variables nativas de Django */
+        --primary: {{ primary_color }} !important;
         --primary-fg: #ffffff !important;
-        
-        /* 2. Fondos y Textos Generales */
-        --body-bg: {{ background_color|default:'#F8F9FA' }} !important;
-        --body-fg: {{ text_color|default:'#212529' }} !important;
-        --body-quiet-color: {{ text_color|default:'#212529' }}aa !important;
-        --body-medium-color: {{ text_color|default:'#212529' }} !important;
-        
-        /* 3. Breadcrumbs y Navegación */
-        --breadcrumbs-bg: {{ primary_color|default:'#607D8B' }}dd !important;
+        --body-bg: {{ background_color }} !important;
+        --body-fg: {{ text_color }} !important;
+        --body-quiet-color: {{ text_color }}aa !important;
+        --breadcrumbs-bg: {{ primary_color }}dd !important;
         --breadcrumbs-fg: #ffffff !important;
-        --breadcrumbs-link-fg: #ffffff !important;
-        --header-bg: {{ primary_color|default:'#607D8B' }} !important;
+        --header-bg: {{ primary_color }} !important;
         --header-link-color: #ffffff !important;
-        
-        /* 4. Enlaces y Botones */
-        --link-fg: {{ secondary_color|default:'#FF9800' }} !important;
-        --link-hover-color: {{ secondary_color|default:'#FF9800' }}cc !important;
-        --button-bg: {{ primary_color|default:'#607D8B' }} !important;
+        --link-fg: {{ secondary_color }} !important;
+        --link-hover-color: {{ secondary_color }}cc !important;
+        --button-bg: {{ primary_color }} !important;
         --button-fg: #ffffff !important;
-        --default-button-bg: {{ primary_color|default:'#607D8B' }} !important;
-        --default-button-hover-bg: {{ primary_color|default:'#607D8B' }}cc !important;
-        --delete-button-bg: #ba2121 !important;
+        --default-button-bg: {{ primary_color }} !important;
         
-        /* 5. Variables personalizadas (para compatibilidad con tu código anterior) */
-        --primary-color: {{ primary_color|default:'#607D8B' }};
-        --secondary-color: {{ secondary_color|default:'#FF9800' }};
-        --bg-color: {{ background_color|default:'#F8F9FA' }};
-        --text-color: {{ text_color|default:'#212529' }};
+        /* Variables personalizadas (compatibilidad) */
+        --primary-color: {{ primary_color }};
+        --primary-color-light: {{ primary_color }}EE;
+        --primary-color-dark: {{ primary_color }}88;
+        --secondary-color: {{ secondary_color }};
+        --secondary-color-light: {{ secondary_color }}EE;
+        --secondary-color-dark: {{ secondary_color }}88;
+        --bg-color: {{ background_color }};
+        --text-color: {{ text_color }};
     }
 
     /* ==========================================
