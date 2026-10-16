@@ -6,140 +6,112 @@
 {% block extrastyle %}
 {{ block.super }}
 <style>
+    /* ==========================================
+       MAPEO DE SITECONFIG A VARIABLES NATIVAS DE DJANGO
+       ========================================== */
     :root {
-        --primary-color: {{ primary_color }};
-        --primary-color-light: {{ primary_color }}EE;
-        --primary-color-dark: {{ primary_color }}88;
-        --secondary-color: {{ secondary_color }};
-        --secondary-color-light: {{ secondary_color }}EE;
-        --secondary-color-dark: {{ secondary_color }}88;
-        --bg-color: {{ background_color }};
-        --text-color: {{ text_color }};
+        /* 1. Colores Principales (Header, Botones primarios) */
+        --primary: {{ primary_color|default:'#607D8B' }} !important;
+        --primary-fg: #ffffff !important;
+        
+        /* 2. Fondos y Textos Generales */
+        --body-bg: {{ background_color|default:'#F8F9FA' }} !important;
+        --body-fg: {{ text_color|default:'#212529' }} !important;
+        --body-quiet-color: {{ text_color|default:'#212529' }}aa !important;
+        --body-medium-color: {{ text_color|default:'#212529' }} !important;
+        
+        /* 3. Breadcrumbs y Navegación */
+        --breadcrumbs-bg: {{ primary_color|default:'#607D8B' }}dd !important;
+        --breadcrumbs-fg: #ffffff !important;
+        --breadcrumbs-link-fg: #ffffff !important;
+        --header-bg: {{ primary_color|default:'#607D8B' }} !important;
+        --header-link-color: #ffffff !important;
+        
+        /* 4. Enlaces y Botones */
+        --link-fg: {{ secondary_color|default:'#FF9800' }} !important;
+        --link-hover-color: {{ secondary_color|default:'#FF9800' }}cc !important;
+        --button-bg: {{ primary_color|default:'#607D8B' }} !important;
+        --button-fg: #ffffff !important;
+        --default-button-bg: {{ primary_color|default:'#607D8B' }} !important;
+        --default-button-hover-bg: {{ primary_color|default:'#607D8B' }}cc !important;
+        --delete-button-bg: #ba2121 !important;
+        
+        /* 5. Variables personalizadas (para compatibilidad con tu código anterior) */
+        --primary-color: {{ primary_color|default:'#607D8B' }};
+        --secondary-color: {{ secondary_color|default:'#FF9800' }};
+        --bg-color: {{ background_color|default:'#F8F9FA' }};
+        --text-color: {{ text_color|default:'#212529' }};
     }
 
-    body {
-        background: var(--bg-color) !important;
-        color: var(--text-color) !important;
-    }
-
+    /* ==========================================
+       FORZADOS ADICIONALES PARA ELEMENTOS REBELDES
+       ========================================== */
+    
+    /* Header y Branding */
     #header {
-        background: var(--primary-color) !important;
-        color: white !important;
-        padding: 10px 20px !important;
+        background: var(--header-bg) !important;
+        color: var(--primary-fg) !important;
     }
-    #header a:link, #header a:visited { color: white !important; }
-    #header a:hover { color: var(--secondary-color) !important; }
-
-    #site-name { display: flex; align-items: center; gap: 12px; }
-    #site-name img {
-        height: 40px; width: 40px; object-fit: cover;
-        border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    #branding h1, #branding h1 a:link, #branding h1 a:visited {
+        color: var(--primary-fg) !important;
     }
-    #site-name a { display: flex; align-items: center; gap: 8px; }
 
-    /* ✅ Botón Toggle de Tema integrado en userlinks */
+    /* Botones de acción */
+    .button, input[type=submit], input[type=button], .submit-row input, a.button {
+        background: var(--button-bg) !important;
+        color: var(--button-fg) !important;
+        border: none !important;
+        font-weight: 600 !important;
+    }
+    .button:hover, input[type=submit]:hover, input[type=button]:hover {
+        background: var(--default-button-hover-bg) !important;
+    }
+
+    /* Breadcrumbs (Migas de pan) */
+    div.breadcrumbs {
+        background: var(--breadcrumbs-bg) !important;
+        color: var(--breadcrumbs-fg) !important;
+    }
+    div.breadcrumbs a {
+        color: var(--breadcrumbs-link-fg) !important;
+    }
+    div.breadcrumbs a:hover {
+        color: var(--breadcrumbs-link-fg) !important;
+        opacity: 0.8;
+    }
+
+    /* Texto general y módulos */
+    body, #content, .module h2, .module caption {
+        color: var(--body-fg) !important;
+    }
+    
+    /* Enlaces dentro del contenido */
+    a:link, a:visited {
+        color: var(--link-fg) !important;
+    }
+    a:hover {
+        color: var(--link-hover-color) !important;
+    }
+
+    /* Botón de Toggle de Tema (Tu código existente, optimizado) */
     .theme-toggle-btn {
         background: transparent !important;
-        border: none !important;
-        padding: 0 !important;
+        border: 1px solid rgba(255,255,255,0.3) !important;
+        padding: 4px 8px !important;
         margin: 0 0 0 8px !important;
         cursor: pointer;
         display: inline-flex !important;
         align-items: center;
-        vertical-align: middle;
-        transition: opacity 0.2s ease;
+        border-radius: 4px;
+        transition: all 0.2s ease;
     }
     .theme-toggle-btn:hover {
-        opacity: 0.7;
+        background: rgba(255,255,255,0.1) !important;
     }
     .theme-toggle-btn svg {
         fill: white !important;
         width: 18px !important;
         height: 18px !important;
-        vertical-align: middle;
-    }
-
-    /* Ocultar iconos originales de Django */
-    #icon-auto, .theme-toggle { display: none !important; }
-
-    input[type=submit], input[type=button], .submit-row input, .button, a.button {
-        background: var(--primary-color) !important;
-        color: white !important;
-        font-weight: 600 !important;
-        border: none !important;
-    }
-    input[type=submit]:hover, .button:hover {
-        background: var(--primary-color-dark) !important;
-    }
-
-    a:link, a:visited { color: var(--secondary-color) !important; }
-    a:hover { color: var(--secondary-color-dark) !important; }
-
-    thead th {
-        background: var(--primary-color) !important;
-        color: white !important;
-        font-weight: 600 !important;
-    }
-    tbody tr:hover { background: var(--primary-color-light) !important; }
-
-    fieldset.module h2, .module h2, .module caption {
-        background: var(--primary-color) !important;
-        color: white !important;
-        padding: 8px 12px !important;
-        font-weight: 600 !important;
-    }
-
-        /* ========================================
-       CAMPOS DE FECHA Y METADATOS (Updated_at, etc.)
-       ======================================== */
-    .field-updated_at,
-    .field-updated_at p,
-    .field-updated_at span,
-    .field-updated_at a,
-    .field-created_at,
-    .field-created_at p,
-    .field-created_at span,
-    .field-created_at a,
-    .submit-row p,
-    .submit-row span,
-    .object-tools a,
-    .help,
-    .help a,
-    .errornote,
-    .errornote a, 
-    div.breadcrumbs a {
-        color: var(--secondary-color) !important;
-        opacity: 0.9; /* Un ligero ajuste para que no compita con el texto principal */
-    }
-
-    div.breadcrumbs a:hover {
-        color: var(--secondary-color-dark) !important;
-    }
-
-    div.breadcrumbs { 
-        color: var(--secondary-color-dark) !important;
-        background: var(--primary-color-dark) !important;
-    }
-
-    a.addlink, a.historylink, a.viewsitelink{ 
-        color: var(--secondary-color-light) !important;
-        background: var(--primary-color) !important;
-        border-radius: 20px;
-        justify-content: center !important;
-        display: flex !important;
-        align-items: center !important;
-        text-align: center !important;
-        padding: 4px 8px !important;
-    }
-
-
-    /* Enlaces dentro de los campos de fecha */
-    .field-updated_at a:hover,
-    .field-created_at a:hover,
-    .submit-row a:hover,
-    .help a:hover {
-        color: var(--secondary-color-dark) !important;
-        text-decoration: underline;
     }
 </style>
 {% endblock %}
