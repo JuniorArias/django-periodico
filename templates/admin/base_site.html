@@ -1,4 +1,4 @@
-{% extends "admin/base_site.html" %}
+{% extends "admin/base" %}
 {% load i18n %}
 
 {% block title %}{{ site_name }} | {% trans 'Django site admin' %}{% endblock %}
@@ -119,7 +119,7 @@
 {% block branding %}
 <h1 id="site-name">
     {% if site_config and site_config.logo %}
-        <img src="{{ site_config.logo.url }}" alt="{{ site_name }}" />
+        <img src="{{ site_config.logo.url }}" alt="{{ site_name }}" style="height: 40px; width: 40px; object-fit: cover; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);" />
     {% endif %}
     <a href="{% url 'admin:index' %}">
         <span>{{ site_name }}</span>
